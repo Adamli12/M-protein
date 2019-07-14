@@ -2,6 +2,16 @@
 import numpy as np
 import cv2
 from matplotlib import pyplot as plt
+from sklearn.mixture import GaussianMixture
+
+def tosample(dense):
+    n=len(dense)
+    sample=[]
+    for i in range(n):
+        for j in range (int(dense[i])):
+            sample.append(i)
+    return sample
+
 
 def todensity(img):
     #hi=img.shape[0]
@@ -66,12 +76,22 @@ def finddensefromcut(path):
     denses=[]
     for i in range(6):
         denses.append(todensity(img[:,hbounds[i*2]:hbounds[i*2+1]]))
-        cv2.imshow("density",img[:,hbounds[i*2]:hbounds[i*2+1]])
-        cv2.waitKey(0)
+        #cv2.imshow("density",img[:,hbounds[i*2]:hbounds[i*2+1]])
+        #cv2.waitKey(0)
     return denses,wi
 
+def GMMreport(path):
+    denses,_=finddensefromcut(path)
+    samples=list()
+    for dense in denses:
+        samples.append(np.array(tosample(dense)).reshape(-1,1))
+    for i in range(1,6):
+        GM=GaussianMixture(n_components=3)
+        GM.fit(samples[i])
+        print(GM.get_params(deep=True))
+    return 0
 
-def report(path):
+def onepeakreport(path):
     t1=130
     t2=15
     i=0
@@ -81,9 +101,11 @@ def report(path):
     ders1=[]
     for dense in denses:
         i+=1
-        if max(dense)>50:                       ########做一个归一化，如果太小就根本不考虑
+        if max(dense)>50:
+#做一个归一化，如果太小就根本不考虑
             dense=dense/max(dense)*255
-        ders.append(cv2.Sobel(cv2.Sobel(dense,cv2.CV_64F,0,1,ksize=3),cv2.CV_64F,0,1,ksize=3))                 ########用二阶导来确定五个column有没有异常，一阶导来确定峰的位置，二阶导因为有双重性所以不能用来断定峰的位置
+        ders.append(cv2.Sobel(cv2.Sobel(dense,cv2.CV_64F,0,1,ksize=3),cv2.CV_64F,0,1,ksize=3))
+#用二阶导来确定五个column有没有异常，一阶导来确定峰的位置，二阶导因为有双重性所以不能用来断定峰的位置
         ders1.append(cv2.Sobel(dense,cv2.CV_64F,0,1,ksize=3))
         #plt.subplot(2,3,i),plt.plot(ders1[i-1])
         plt.subplot(2,3,i),plt.plot(dense)
@@ -114,4 +136,4 @@ def report(path):
     abn=[abn3]+abn1+abn2
     return abn
 
-print(report("l1.jpg"))#在i1时就是背景有些太大了，结果阈值不够了，需要尖角识别器，可以运行来观看1阶导有尖角但是二阶导不大
+print(GMMreport("l1.jpg"))#在i1时就是背景有些太大了，结果阈值不够了，需要尖角识别器，可以运行来观看1阶导有尖角但是二阶导不大
