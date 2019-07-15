@@ -13,6 +13,11 @@ def tosample(dense):
             sample.append(i)
     return sample
 
+def toGM(x,components,means,covs,weights):
+    ys=np.zeros((3,len(x)))
+    for i in range(components):
+        ys[i]=weights[i]/np.sqrt(2*np.pi*covs[i])*np.exp(-(x-means[i])**2/(2*covs[i]))
+    return ys
 
 def todensity(img):
     #hi=img.shape[0]
@@ -105,26 +110,36 @@ def GMMreport(path):#maybe combine this with rulebased
     return 0
 
 def BGMreport(path):
+    n_components=3
     denses,_=finddensefromcut(path)
+    lofd=len(denses[0])
     samples=list()
     for i in range(1,6):
         samples.append(np.array(tosample(denses[i])).reshape(-1,1))
-    no=[0,0,0,0,0]
-    for i in range(len(samples)):
-        if len(samples[i])<500:
-            no[i]=1
+    maxd=[]##################归一化没做完，再想想想！！！！！
+    for dense in denses[1:]:
+        maxd.append(max(dense))
     allmeans=[]
     allcovs=[]
     allweights=[]
     for i in range(5):
-        BGM=BayesianGaussianMixture(n_components=4,covariance_type='spherical')
+        BGM=BayesianGaussianMixture(n_components=n_components,covariance_type='spherical',weight_concentration_prior=0.000000000001,max_iter=200)
         BGM.fit(samples[i])
-        means=BGM.means_
+        means=np.reshape(BGM.means_,(-1,))
         allmeans.append(means)
         covs=BGM.covariances_
         allcovs.append(covs)
         weights=BGM.weights_
         allweights.append(weights)
+    for i in range(5):
+        plt.subplot(2,3,i+1),plt.plot(denses[i+1]/maxd[i]*255)
+        X=np.linspace(0,lofd,num=200,endpoint=False)
+        Ys=toGM(X,n_components,allmeans[i],allcovs[i],allweights[i])
+        for j in range(3):
+            #plt.subplot(1,5,i+1),plt.plot([allmeans[i][j],allmeans[i][j]],[0,255])
+            plt.subplot(2,3,i+1),plt.plot(X,len(samples[i])*Ys[j]/maxd[i]*255)
+            plt.ylim(0,255)
+    plt.show()
     return 0
 
 def onepeakreport(path):
@@ -172,4 +187,4 @@ def onepeakreport(path):
     abn=[abn3]+abn1+abn2
     return abn
 
-print(GMMreport("pics/l1.jpg"))#在i1时就是背景有些太大了，结果阈值不够了，需要尖角识别器，可以运行来观看1阶导有尖角但是二阶导不大
+print(BGMreport("pics/f1.jpg"))#在i1时就是背景有些太大了，结果阈值不够了，需要尖角识别器，可以运行来观看1阶导有尖角但是二阶导不大
