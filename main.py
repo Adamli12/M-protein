@@ -81,7 +81,7 @@ def finddensefromcut(path):
         #cv2.waitKey(0)
     return denses,wi
 
-def GMMreport(path):
+def GMMreport(path):#maybe combine this with rulebased
     denses,_=finddensefromcut(path)
     samples=list()
     for i in range(1,6):
