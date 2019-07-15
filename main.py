@@ -14,7 +14,7 @@ def tosample(dense):
     return sample
 
 def toGM(x,components,means,covs,weights):
-    ys=np.zeros((3,len(x)))
+    ys=np.zeros((components,len(x)))
     for i in range(components):
         ys[i]=weights[i]/np.sqrt(2*np.pi*covs[i])*np.exp(-(x-means[i])**2/(2*covs[i]))
     return ys
@@ -87,6 +87,7 @@ def finddensefromcut(path):
     return denses,wi
 
 def GMMreport(path):#maybe combine this with rulebased
+    n_components=3
     denses,_=finddensefromcut(path)
     samples=list()
     for i in range(1,6):
@@ -99,7 +100,7 @@ def GMMreport(path):#maybe combine this with rulebased
     allcovs=[]
     allweights=[]
     for i in range(5):
-        GM=GaussianMixture(n_components=3,covariance_type='spherical')
+        GM=GaussianMixture(n_components=n_components,covariance_type='spherical')
         GM.fit(samples[i])
         means=GM.means_
         allmeans.append(means)
@@ -110,6 +111,8 @@ def GMMreport(path):#maybe combine this with rulebased
     return 0
 
 def BGMreport(path):
+    t1=130
+    t2=15
     n_components=3
     denses,_=finddensefromcut(path)
     lofd=len(denses[0])
@@ -132,15 +135,47 @@ def BGMreport(path):
         weights=BGM.weights_
         allweights.append(weights)
     for i in range(5):
-        plt.subplot(2,3,i+1),plt.plot(denses[i+1]/maxd[i]*255)
+        plt.subplot(2,n_components,i+1),plt.plot(denses[i+1])
         X=np.linspace(0,lofd,num=200,endpoint=False)
         Ys=toGM(X,n_components,allmeans[i],allcovs[i],allweights[i])
-        for j in range(3):
+        for j in range(n_components):
             #plt.subplot(1,5,i+1),plt.plot([allmeans[i][j],allmeans[i][j]],[0,255])
-            plt.subplot(2,3,i+1),plt.plot(X,len(samples[i])*Ys[j]/maxd[i]*255)
+            plt.subplot(2,n_components,i+1),plt.plot(X,len(samples[i])*Ys[j])
             plt.ylim(0,255)
     plt.show()
-    return 0
+    ans=np.zeros((12,))
+    for i in [0,1,2]:
+        for j in [3,4]:
+            if maxd[i]<50 or maxd[j]<50:
+                continue
+            else:
+                for k in range(len(allmeans[i])):
+                    for l in range(len(allmeans[j])):
+                        if abs(allmeans[i][k]-allmeans[j][l])>lofd/t2:
+                            continue
+                        else:
+                            if allweights[i][k]<0.1 or allweights[j][l]<0.1:
+                                continue
+                            else:
+                                if allcovs[i][k]>80 or allcovs[j][l]>80:
+                                    continue
+                                else:
+                                    ans[i*2+j-2]=1 
+                                    ans[7+i]=1
+                                    ans[7+j]=1  
+                                    ans[0]=1   
+    for i in range(5):
+        for j in range(n_components):
+            if maxd[i]<50:
+                continue
+            elif allweights[i][j]<0.05:
+                continue
+            elif allcovs[i][j]>80:
+                continue
+            else:
+                ans[7+i]=1
+                ans[0]=1
+    return ans
 
 def onepeakreport(path):
     t1=130
@@ -187,4 +222,4 @@ def onepeakreport(path):
     abn=[abn3]+abn1+abn2
     return abn
 
-print(BGMreport("pics/f1.jpg"))#在i1时就是背景有些太大了，结果阈值不够了，需要尖角识别器，可以运行来观看1阶导有尖角但是二阶导不大
+print(BGMreport("pics/l1.jpg"))#在i1时就是背景有些太大了，结果阈值不够了，需要尖角识别器，可以运行来观看1阶导有尖角但是二阶导不大
