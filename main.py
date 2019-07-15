@@ -172,4 +172,4 @@ def onepeakreport(path):
     abn=[abn3]+abn1+abn2
     return abn
 
-print(GMMreport("l1.jpg"))#在i1时就是背景有些太大了，结果阈值不够了，需要尖角识别器，可以运行来观看1阶导有尖角但是二阶导不大
+print(GMMreport("pics/l1.jpg"))#在i1时就是背景有些太大了，结果阈值不够了，需要尖角识别器，可以运行来观看1阶导有尖角但是二阶导不大
