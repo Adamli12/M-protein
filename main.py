@@ -2,6 +2,7 @@
 import numpy as np
 import cv2
 from matplotlib import pyplot as plt
+from sklearn.mixture import BayesianGaussianMixture
 from sklearn.mixture import GaussianMixture
 
 def tosample(dense):
@@ -83,12 +84,24 @@ def finddensefromcut(path):
 def GMMreport(path):
     denses,_=finddensefromcut(path)
     samples=list()
-    for dense in denses:
-        samples.append(np.array(tosample(dense)).reshape(-1,1))
     for i in range(1,6):
-        GM=GaussianMixture(n_components=3)
+        samples.append(np.array(tosample(denses[i])).reshape(-1,1))
+    no=[0,0,0,0,0]
+    for i in range(len(samples)):
+        if len(samples[i])<500:
+            no[i]=1
+    allmeans=[]
+    allcovs=[]
+    allweights=[]
+    for i in range(5):
+        GM=GaussianMixture(n_components=3,covariance_type='spherical')
         GM.fit(samples[i])
-        print(GM.get_params(deep=True))
+        means=GM.means_
+        allmeans.append(means)
+        covs=GM.covariances_
+        allcovs.append(covs)
+        weights=GM.weights_
+        allweights.append(weights)
     return 0
 
 def onepeakreport(path):
