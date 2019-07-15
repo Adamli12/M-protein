@@ -104,6 +104,29 @@ def GMMreport(path):
         allweights.append(weights)
     return 0
 
+def BGMreport(path):
+    denses,_=finddensefromcut(path)
+    samples=list()
+    for i in range(1,6):
+        samples.append(np.array(tosample(denses[i])).reshape(-1,1))
+    no=[0,0,0,0,0]
+    for i in range(len(samples)):
+        if len(samples[i])<500:
+            no[i]=1
+    allmeans=[]
+    allcovs=[]
+    allweights=[]
+    for i in range(5):
+        BGM=BayesianGaussianMixture(n_components=4,covariance_type='spherical')
+        BGM.fit(samples[i])
+        means=BGM.means_
+        allmeans.append(means)
+        covs=BGM.covariances_
+        allcovs.append(covs)
+        weights=BGM.weights_
+        allweights.append(weights)
+    return 0
+
 def onepeakreport(path):
     t1=130
     t2=15
