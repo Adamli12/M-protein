@@ -30,6 +30,9 @@ def todensity(img):
     plt.show()"""
     img2 = img[:,int(wi*0.25):int(wi*0.75)]
     dense=255-np.mean(img2,axis=1)
+    dense[150]=dense[150]+1###BGM will not be able to calculate 0 sample situation
+    dense[151]=dense[151]+1
+    dense[152]=dense[152]+1
     """plt.plot(dense)
     plt.show()"""
     return dense
@@ -111,26 +114,22 @@ def GMMreport(path):#maybe combine this with rulebased
     return 0
 
 def BGMreport(path):
-    t1=130
     t2=15
-    t3=0.06
+    t3=0.07
     n_components=3
     denses,_=finddensefromcut(path)
     maxd=[]
     for dense in denses[1:]:
         maxd.append(max(dense))
-    """for i in range(len(denses)):
-        if max(denses[i])>50:#做一个归一化，如果太小就根本不考虑
-            denses[i]=denses[i]/max(denses[i])*255"""
     lofd=len(denses[0])
     samples=list()
-    for i in range(1,6):
+    for i in range(1,6):#sampling for BGM
         samples.append(np.array(tosample(denses[i])).reshape(-1,1))
     allmeans=[]
     allcovs=[]
     allweights=[]
     for i in range(5):
-        BGM=BayesianGaussianMixture(n_components=n_components,covariance_type='spherical',weight_concentration_prior=0.000000000001,max_iter=200)
+        BGM=BayesianGaussianMixture(n_components=n_components,covariance_type='spherical',weight_concentration_prior=0.0000000000001,max_iter=500)
         BGM.fit(samples[i])
         means=np.reshape(BGM.means_,(-1,))
         allmeans.append(means)
@@ -138,7 +137,7 @@ def BGMreport(path):
         allcovs.append(covs)
         weights=BGM.weights_
         allweights.append(weights)
-    for i in range(5):
+    for i in range(5):#visualization
         plt.subplot(2,n_components,i+1),plt.plot(denses[i+1])
         X=np.linspace(0,lofd,num=200,endpoint=False)
         Ys=toGM(X,n_components,allmeans[i],allcovs[i],allweights[i])
@@ -149,6 +148,24 @@ def BGMreport(path):
             plt.ylim(0,255)
     plt.show()
     ans=np.zeros((12,))
+    pre=np.zeros((5,n_components))
+    for i in range(5):###preprocessing the data to avoid peak overlapping(far overlap and near overlap) influence，如果很理想的情况应该能把两个far overlap的peak合并成一个在中间mean的，但是现在可以先直接把两个抑制掉，毕竟就不太可能是单克隆峰了。far overlap也就是两个峰实际上在图里面是同一个，BGM将其拆分从而更好的拟合高斯模型，我们这里将其抑制因为能够拆分为两个峰的基本上cov都比较大，不尖。
+        for j in range(n_components):
+            for l in range(n_components):
+                if j<l:
+                    if allweights[i][j]/allweights[i][l]>2.5 or allweights[i][j]/allweights[i][l]<0.4:#weights差距太大就不管，因为小的不会影响大的，小的在后面会被忽略
+                        continue
+                    if abs(allmeans[i][j]-allmeans[i][l])<lofd/t2:#如果属于背景峰的情况则将weights显著变大，两个都变大因为背景变大之后也会因为cov大而被筛除。存在cov相近从而误将多克隆峰weights变大导致错分的可能，但是不大
+                        neww=allweights[i][j]+allweights[i][l]
+                        allweights[i][j]=neww*2
+                        allweights[i][l]=neww*2
+                        continue
+                    if allcovs[i][j]/allcovs[i][l]>2.5 or allcovs[i][j]/allcovs[i][l]<0.4:#如果两个峰的cov差距很大那就不算在far overlap里面，因为原本在图中就不是同一个峰
+                        continue
+                    if allcovs[i][j]<70 or allcovs[i][l]<70:#如果两个之间只要有一个的cov很小，而且这个cov很小的峰weight也不低，那么就算原来是一个峰被分开了原来的峰也应该是尖峰
+                        continue
+                    elif abs(allmeans[i][j]-allmeans[i][l])<3.5*np.sqrt(max(allcovs[i][j],allcovs[i][l])):#最后两个峰如果离得比较近有交叉部分也不符合上述条件那么就可以认为属于图中一个峰被BGM分开，分开之前是多克隆峰分开之后变为尖峰，会导致错选，这里将其直接抑制，不能通过这两个BGM伪造的峰断定任何异常结果
+                        pre[i][j]=pre[i][l]=1             
     for i in [0,1,2]:
         for j in [3,4]:
             if maxd[i]<50 or maxd[j]<50:
@@ -156,6 +173,8 @@ def BGMreport(path):
             else:
                 for k in range(len(allmeans[i])):
                     for l in range(len(allmeans[j])):
+                        if pre[i][k]==1 or pre[j][l]==1:
+                            continue
                         if abs(allmeans[i][k]-allmeans[j][l])>lofd/t2:
                             continue
                         else:
@@ -171,11 +190,13 @@ def BGMreport(path):
                                     ans[0]=1   
     for i in range(5):
         for j in range(n_components):
-            if maxd[i]<50:
+            if pre[i][j]==1:
+                continue
+            if maxd[i]<80:
                 continue
             elif allweights[i][j]<0.05:
                 continue
-            elif allcovs[i][j]/allweights[i][j]/len(samples[i])>t3:###将sample数量与weights考虑进来，这样能够更准确的衡量峰的形状
+            if allcovs[i][j]/allweights[i][j]/len(samples[i])>t3:###将sample数量与weights考虑进来，这样能够更准确的衡量峰的形状
                 continue
             else:
                 ans[7+i]=1
@@ -226,5 +247,21 @@ def onepeakreport(path):
         abn3=0
     abn=[abn3]+abn1+abn2
     return abn
-
-print(BGMreport("pics/f1.jpg"))#依然对背景中的不行，高斯无法近似平台背景
+a=[1,1,0,0,0,0,0,1,0,0,1,0]
+b=[1,0,0,1,0,0,0,0,1,0,1,0]
+c=[1,0,0,0,0,1,0,0,0,1,1,0]
+d=[1,0,1,0,0,0,0,1,0,0,0,1]
+e=[1,0,0,0,1,0,0,0,1,0,0,1]
+f=[1,0,0,0,0,0,1,0,0,1,0,1]
+g=[1,0,0,0,0,0,0,0,0,0,0,1]
+h=[1,0,0,0,0,0,0,0,0,0,1,0]
+i=[1,1,0,0,0,0,0,1,0,0,1,0]
+j=[1,0,1,0,0,0,0,1,0,0,0,1]
+k=[1,1,1,0,0,0,0,1,0,0,1,1]
+l=[1,1,0,1,0,1,0,1,1,1,1,0]
+m=[1,0,1,0,0,0,0,1,0,0,0,1]
+n=[1,0,0,0,1,0,0,0,1,0,0,1]
+o=[1,1,1,1,0,0,0,1,1,0,1,1]
+p=[1,0,0,0,1,0,1,0,1,1,0,1]
+q=[1,0,0,0,0,0,0,0,1,0,1,1]
+print(BGMreport("pics/i1.jpg")==i)###i与背景差距太小，阈值不清楚，不能分对
