@@ -113,15 +113,19 @@ def GMMreport(path):#maybe combine this with rulebased
 def BGMreport(path):
     t1=130
     t2=15
+    t3=0.6
     n_components=3
     denses,_=finddensefromcut(path)
+    maxd=[]
+    for dense in denses[1:]:
+        maxd.append(max(dense))
+    for i in range(len(denses)):
+        if max(denses[i])>50:#做一个归一化，如果太小就根本不考虑
+            denses[i]=denses[i]/max(denses[i])*255
     lofd=len(denses[0])
     samples=list()
     for i in range(1,6):
         samples.append(np.array(tosample(denses[i])).reshape(-1,1))
-    maxd=[]##################归一化没做完，再想想想！！！！！
-    for dense in denses[1:]:
-        maxd.append(max(dense))
     allmeans=[]
     allcovs=[]
     allweights=[]
@@ -141,6 +145,7 @@ def BGMreport(path):
         for j in range(n_components):
             #plt.subplot(1,5,i+1),plt.plot([allmeans[i][j],allmeans[i][j]],[0,255])
             plt.subplot(2,n_components,i+1),plt.plot(X,len(samples[i])*Ys[j])
+            #plt.subplot(2,n_components,i+1),plt.plot(X,Ys[j])
             plt.ylim(0,255)
     plt.show()
     ans=np.zeros((12,))
@@ -157,7 +162,7 @@ def BGMreport(path):
                             if allweights[i][k]<0.1 or allweights[j][l]<0.1:
                                 continue
                             else:
-                                if allcovs[i][k]>80 or allcovs[j][l]>80:
+                                if allcovs[i][k]/maxd[i]>t3 or allcovs[j][l]/maxd[j]>t3:###将sample数量考虑进来，这样能够更准确的衡量峰的形状
                                     continue
                                 else:
                                     ans[i*2+j-2]=1 
@@ -170,7 +175,7 @@ def BGMreport(path):
                 continue
             elif allweights[i][j]<0.05:
                 continue
-            elif allcovs[i][j]>80:
+            elif allcovs[i][j]/maxd[i]>t3:###将sample数量考虑进来，这样能够更准确的衡量峰的形状
                 continue
             else:
                 ans[7+i]=1
@@ -222,4 +227,4 @@ def onepeakreport(path):
     abn=[abn3]+abn1+abn2
     return abn
 
-print(BGMreport("pics/l1.jpg"))#在i1时就是背景有些太大了，结果阈值不够了，需要尖角识别器，可以运行来观看1阶导有尖角但是二阶导不大
+print(BGMreport("pics/e1.jpg"))#依然对背景中的不行，高斯无法近似平台背景
