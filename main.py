@@ -113,15 +113,15 @@ def GMMreport(path):#maybe combine this with rulebased
 def BGMreport(path):
     t1=130
     t2=15
-    t3=0.6
+    t3=0.06
     n_components=3
     denses,_=finddensefromcut(path)
     maxd=[]
     for dense in denses[1:]:
         maxd.append(max(dense))
-    for i in range(len(denses)):
+    """for i in range(len(denses)):
         if max(denses[i])>50:#做一个归一化，如果太小就根本不考虑
-            denses[i]=denses[i]/max(denses[i])*255
+            denses[i]=denses[i]/max(denses[i])*255"""
     lofd=len(denses[0])
     samples=list()
     for i in range(1,6):
@@ -162,7 +162,7 @@ def BGMreport(path):
                             if allweights[i][k]<0.1 or allweights[j][l]<0.1:
                                 continue
                             else:
-                                if allcovs[i][k]/maxd[i]>t3 or allcovs[j][l]/maxd[j]>t3:###将sample数量考虑进来，这样能够更准确的衡量峰的形状
+                                if allcovs[i][k]/allweights[i][k]/len(samples[i])>t3 or allcovs[j][l]/allweights[j][l]/len(samples[j])>t3:###将sample数量与weights考虑进来，这样能够更准确的衡量峰的形状
                                     continue
                                 else:
                                     ans[i*2+j-2]=1 
@@ -175,7 +175,7 @@ def BGMreport(path):
                 continue
             elif allweights[i][j]<0.05:
                 continue
-            elif allcovs[i][j]/maxd[i]>t3:###将sample数量考虑进来，这样能够更准确的衡量峰的形状
+            elif allcovs[i][j]/allweights[i][j]/len(samples[i])>t3:###将sample数量与weights考虑进来，这样能够更准确的衡量峰的形状
                 continue
             else:
                 ans[7+i]=1
@@ -227,4 +227,4 @@ def onepeakreport(path):
     abn=[abn3]+abn1+abn2
     return abn
 
-print(BGMreport("pics/e1.jpg"))#依然对背景中的不行，高斯无法近似平台背景
+print(BGMreport("pics/f1.jpg"))#依然对背景中的不行，高斯无法近似平台背景
