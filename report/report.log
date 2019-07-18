@@ -1,10 +1,10 @@
-This is XeTeX, Version 3.14159265-2.6-0.99996 (TeX Live 2016/W32TeX) (preloaded format=xelatex 2016.10.7)  10 JUL 2019 11:52
+This is XeTeX, Version 3.14159265-2.6-0.99996 (TeX Live 2016/W32TeX) (preloaded format=xelatex 2016.10.7)  17 JUL 2019 21:33
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
  %&-line parsing enabled.
-**d:/Tsinghua/junior2/application/summer/M-protain/report.tex
-(d:/Tsinghua/junior2/application/summer/M-protain/report.tex
+**d:/Tsinghua/junior2/application/summer/M-protain/report/report.tex
+(d:/Tsinghua/junior2/application/summer/M-protain/report/report.tex
 LaTeX2e <2016/03/31>
 Babel <3.9r> and hyphenation patterns for 83 language(s) loaded.
 (c:/texlive/2016/texmf-dist/tex/latex/ctex/ctexart.cls (c:/texlive/2016/texmf-dist/tex/latex/l3kernel/expl3.sty
@@ -1410,15 +1410,27 @@ Overfull \hbox (52.90598pt too wide) in paragraph at lines 20--36
 [][] 
  []
 
+
+Overfull \hbox (0.4989pt too wide) in paragraph at lines 42--42
+[]\EU1/lmr/bx/n/14.4 Peak Detection Method(can only tackle single peak
+ []
+
 File: gl.jpg Graphic file (type QTm)
 <use  "gl.jpg" > [2]
 File: lgG-lambda.png Graphic file (type QTm)
  <use  "lgG-lambda.png" >
-Overfull \hbox (9.39203pt too wide) in paragraph at lines 47--51
+Overfull \hbox (9.39203pt too wide) in paragraph at lines 48--52
 []\EU1/lmr/m/n/12 cv2.fastNlMeansDenoising are applied to every column of the electrophore-
  []
 
 [3]
+File: f.png Graphic file (type QTm)
+ <use  "f.png" >
+Overfull \hbox (44.59985pt too wide) in paragraph at lines 58--62
+[]\EU1/lmr/m/n/12 Firstly we try to preprocess the peak information provided by the GMM(Gaussian
+ []
+
+[4] [5]
 File: no.jpg Graphic file (type QTm)
  <use  "no.jpg" >
 File: normal.png Graphic file (type QTm)
@@ -1426,14 +1438,22 @@ File: normal.png Graphic file (type QTm)
 File: pr.jpg Graphic file (type QTm)
  <use  "pr.jpg" >
 File: polyclonal-increase.png Graphic file (type QTm)
- <use  "polyclonal-increase.png" > [4] [5] (./report.aux) ) 
+ <use  "polyclonal-increase.png" > [6]
+File: f1.jpg Graphic file (type QTm)
+ <use  "f1.jpg" >
+File: f.png Graphic file (type QTm)
+ <use  "f.png" > [7]
+File: l1.jpg Graphic file (type QTm)
+ <use  "l1.jpg" >
+File: l.png Graphic file (type QTm)
+ <use  "l.png" > [8] [9] (./report.aux) ) 
 Here is how much of TeX's memory you used:
- 22204 strings out of 493591
- 442861 string characters out of 6146794
+ 22212 strings out of 493591
+ 442926 string characters out of 6146794
  413507 words of memory out of 5000000
- 25370 multiletter control sequences out of 15000+600000
+ 25374 multiletter control sequences out of 15000+600000
  16677 words of font info for 80 fonts, out of 8000000 for 9000
  1347 hyphenation exceptions out of 8191
- 65i,7n,78p,10583b,256s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 65i,7n,78p,10590b,256s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on report.pdf (5 pages).
+Output written on report.pdf (9 pages).
