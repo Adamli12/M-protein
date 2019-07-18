@@ -36,7 +36,7 @@ def todensity(img):
     """plt.plot(dense)
     plt.show()"""
     return dense
-
+"""
 def finddense(path):
     img = cv2.imread(path,0)
     hi=img.shape[0]
@@ -69,7 +69,7 @@ def finddense(path):
     for i in range(6):
         denses.append(todensity(img[vbounds[0]:vbounds[1],hbounds[i*2]:hbounds[i*2+1]]))
     return denses,wi
-
+"""
 def finddensefromcut(path):
     img = cv2.imread(path,0)
     #hi=img.shape[0]
@@ -88,7 +88,7 @@ def finddensefromcut(path):
         #cv2.imshow("density",img[:,hbounds[i*2]:hbounds[i*2+1]])
         #cv2.waitKey(0)
     return denses,wi
-
+"""
 def GMMreport(path):#maybe combine this with rulebased
     n_components=3
     denses,_=finddensefromcut(path)
@@ -112,7 +112,7 @@ def GMMreport(path):#maybe combine this with rulebased
         weights=GM.weights_
         allweights.append(weights)
     return 0
-
+"""
 def BGMreport(path):
     t2=15
     t3=0.07
@@ -149,22 +149,23 @@ def BGMreport(path):
     plt.show()
     ans=np.zeros((12,))
     pre=np.zeros((5,n_components))
-    for i in range(5):###preprocessing the data to avoid peak overlapping(far overlap and near overlap) influence，如果很理想的情况应该能把两个far overlap的peak合并成一个在中间mean的，但是现在可以先直接把两个抑制掉，毕竟就不太可能是单克隆峰了。far overlap也就是两个峰实际上在图里面是同一个，BGM将其拆分从而更好的拟合高斯模型，我们这里将其抑制因为能够拆分为两个峰的基本上cov都比较大，不尖。
+    for i in range(5):###preprocessing the data to avoid peak overlapping(far overlap and near overlap) influence: identify far/near overlap cases and suppress far overlap peaks, amplify near overlap peaks
+        ###如果很理想的情况应该能把两个far overlap的peak合并成一个在中间mean的，但是现在可以先直接把两个抑制掉，毕竟就不太可能是单克隆峰了。far overlap也就是两个峰实际上在图里面是同一个，BGM将其拆分从而更好的拟合高斯模型，我们这里将其抑制因为能够拆分为两个峰的基本上cov都比较大，不尖。
         for j in range(n_components):
             for l in range(n_components):
                 if j<l:
-                    if allweights[i][j]/allweights[i][l]>2.5 or allweights[i][j]/allweights[i][l]<0.4:#weights差距太大就不管，因为小的不会影响大的，小的在后面会被忽略
+                    if allweights[i][j]/allweights[i][l]>2.5 or allweights[i][j]/allweights[i][l]<0.4:#ignore when weight difference is too large
                         continue
-                    if abs(allmeans[i][j]-allmeans[i][l])<lofd/t2:#如果属于背景峰的情况则将weights显著变大，两个都变大因为背景变大之后也会因为cov大而被筛除。存在cov相近从而误将多克隆峰weights变大导致错分的可能，但是不大
+                    if abs(allmeans[i][j]-allmeans[i][l])<lofd/t2:#near overlap situation is when a sharp peak is on a mild one. it happens when monoclonal peak has a background polyclonal peak. here we amplify both peaks' weights so that it will be detected as abnormal in the classification step
                         neww=allweights[i][j]+allweights[i][l]
                         allweights[i][j]=neww*2
                         allweights[i][l]=neww*2
                         continue
-                    if allcovs[i][j]/allcovs[i][l]>2.5 or allcovs[i][j]/allcovs[i][l]<0.4:#如果两个峰的cov差距很大那就不算在far overlap里面，因为原本在图中就不是同一个峰
+                    if allcovs[i][j]/allcovs[i][l]>2.5 or allcovs[i][j]/allcovs[i][l]<0.4:#if the cov difference is large than it will be ignored from far overlap because there should be two peaks in the original density plot
                         continue
-                    if allcovs[i][j]<70 or allcovs[i][l]<70:#如果两个之间只要有一个的cov很小，而且这个cov很小的峰weight也不低，那么就算原来是一个峰被分开了原来的峰也应该是尖峰
+                    if allcovs[i][j]<70 or allcovs[i][l]<70:#if one of the considered peak has very small variance, then it should not be far overlap situation where the original peak is mild
                         continue
-                    elif abs(allmeans[i][j]-allmeans[i][l])<3.5*np.sqrt(max(allcovs[i][j],allcovs[i][l])):#最后两个峰如果离得比较近有交叉部分也不符合上述条件那么就可以认为属于图中一个峰被BGM分开，分开之前是多克隆峰分开之后变为尖峰，会导致错选，这里将其直接抑制，不能通过这两个BGM伪造的峰断定任何异常结果
+                    elif abs(allmeans[i][j]-allmeans[i][l])<3.5*np.sqrt(max(allcovs[i][j],allcovs[i][l])):#far overlap situation where there is only a mild peak in the original density plot, and GMM model break it down to two sharper peaks to fit the guassian curves more accurately. here we just suppress the peaks and thus we cannot determine the column is abnormal because of the two considered components
                         pre[i][j]=pre[i][l]=1             
     for i in [0,1,2]:
         for j in [3,4]:
@@ -181,7 +182,7 @@ def BGMreport(path):
                             if allweights[i][k]<0.1 or allweights[j][l]<0.1:
                                 continue
                             else:
-                                if allcovs[i][k]/allweights[i][k]/len(samples[i])>t3 or allcovs[j][l]/allweights[j][l]/len(samples[j])>t3:###将sample数量与weights考虑进来，这样能够更准确的衡量峰的形状
+                                if allcovs[i][k]/allweights[i][k]/len(samples[i])>t3 or allcovs[j][l]/allweights[j][l]/len(samples[j])>t3:###the t figure, represents the sharpness of the peak. just variance is not enough, we need to consider n_samples and weights too. actually I am going to change variance to the square root of variance to make sure the dimension is right.
                                     continue
                                 else:
                                     ans[i*2+j-2]=1 
@@ -196,13 +197,13 @@ def BGMreport(path):
                 continue
             elif allweights[i][j]<0.05:
                 continue
-            if allcovs[i][j]/allweights[i][j]/len(samples[i])>t3:###将sample数量与weights考虑进来，这样能够更准确的衡量峰的形状
+            if allcovs[i][j]/allweights[i][j]/len(samples[i])>t3:###t-figure
                 continue
             else:
                 ans[7+i]=1
                 ans[0]=1
     return ans
-
+"""
 def onepeakreport(path):
     t1=130
     t2=15
@@ -247,6 +248,7 @@ def onepeakreport(path):
         abn3=0
     abn=[abn3]+abn1+abn2
     return abn
+"""
 a=[1,1,0,0,0,0,0,1,0,0,1,0]
 b=[1,0,0,1,0,0,0,0,1,0,1,0]
 c=[1,0,0,0,0,1,0,0,0,1,1,0]
@@ -264,4 +266,4 @@ n=[1,0,0,0,1,0,0,0,1,0,0,1]
 o=[1,1,1,1,0,0,0,1,1,0,1,1]
 p=[1,0,0,0,1,0,1,0,1,1,0,1]
 q=[1,0,0,0,0,0,0,0,1,0,1,1]
-print(BGMreport("pics/l1.jpg")==l)###i与背景差距太小，阈值不清楚，不能分对 
+print(BGMreport("pics/l1.jpg")==l)
