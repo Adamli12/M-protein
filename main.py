@@ -4,6 +4,21 @@ import cv2
 from matplotlib import pyplot as plt
 from sklearn.mixture import BayesianGaussianMixture
 from sklearn.mixture import GaussianMixture
+def toGM(x,components,means,covs,weights):
+    ys=np.zeros((components,len(x)))
+    for i in range(components):
+        ys[i]=weights[i]/np.sqrt(2*np.pi*covs[i])*np.exp(-(x-means[i])**2/(2*covs[i]))
+    return ys
+
+def toimage(weights,means,covs,n_samples):
+    X=np.linspace(0,300,num=300,endpoint=False)
+    Ys=toGM(X,len(means),means,covs,weights))
+    for i in range(3)
+    plt.subplot(1,3,i),plt.plot(X,n_samples[i]*Ys[i])
+    plt.show()
+    return 0
+
+toimage([0.2,0.2],[170,230],[80,200],2000)
 
 def tosample(dense):
     n=len(dense)
@@ -12,12 +27,6 @@ def tosample(dense):
         for j in range (int(dense[i])):
             sample.append(i)
     return sample
-
-def toGM(x,components,means,covs,weights):
-    ys=np.zeros((components,len(x)))
-    for i in range(components):
-        ys[i]=weights[i]/np.sqrt(2*np.pi*covs[i])*np.exp(-(x-means[i])**2/(2*covs[i]))
-    return ys
 
 def todensity(img):
     #hi=img.shape[0]
