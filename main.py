@@ -26,9 +26,14 @@ def toimage(weights,means,covs,n_samples):
 
 def showgeneratedimg(imgs):
     hi,wi=np.shape(imgs[0])
-    interval=np.uint8(np.zeros((hi,int(wi/6))))
+    interval=np.uint8(np.zeros((hi,int(wi/6))))+255
     gimg=np.hstack((imgs[0],interval,imgs[1],interval,imgs[2],interval,imgs[3],interval,imgs[4]))
-    cv2.imshow("gimg",gimg)
+    rgbgimg=np.zeros((gimg.shape[0],gimg.shape[1],3))
+    rgbgimg=rgbgimg+255
+    rgbgimg[:,:,1]+=gimg
+    rgbgimg[:,:,2]+=gimg
+    rgbgimg=np.uint8(rgbgimg)
+    cv2.imshow("gimg",rgbgimg)
     cv2.waitKey(0)
     return gimg
 
