@@ -12,10 +12,10 @@ def toGM(x,components,means,covs,weights):
 
 def toimage(weights,means,covs,n_samples):
     X=np.linspace(0,300,num=300,endpoint=False)
-    Ys=toGM(X,len(means),means,covs,weights))
-    for i in range(3)
-    plt.subplot(1,3,i),plt.plot(X,n_samples[i]*Ys[i])
-    plt.show()
+    Ys=toGM(X,len(means),means,covs,weights)
+    for i in range(len(means)):
+        plt.subplot(1,len(means),i),plt.plot(X,n_samples[i]*Ys[i])
+        plt.show()
     return 0
 
 toimage([0.2,0.2],[170,230],[80,200],2000)
