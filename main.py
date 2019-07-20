@@ -14,11 +14,23 @@ def toimage(weights,means,covs,n_samples):
     X=np.linspace(0,300,num=300,endpoint=False)
     Ys=toGM(X,len(means),means,covs,weights)
     for i in range(len(means)):
-        plt.subplot(1,len(means),i),plt.plot(X,n_samples[i]*Ys[i])
-        plt.show()
-    return 0
+        plt.plot(X,n_samples*Ys[i])
+    dense=np.sum(Ys,axis=0)
+    plt.plot(X,dense*n_samples)
+    plt.show()
+    denseno=np.reshape(np.uint8(255-dense*n_samples),(300,1))
+    img=np.tile(denseno,50)
+    #cv2.imshow("generated",img)
+    #cv2.waitKey(0)
+    return img
 
-toimage([0.2,0.2],[170,230],[80,200],2000)
+def showgeneratedimg(imgs):
+    hi,wi=np.shape(imgs[0])
+    interval=np.uint8(np.zeros((hi,int(wi/6))))
+    gimg=np.hstack((imgs[0],interval,imgs[1],interval,imgs[2],interval,imgs[3],interval,imgs[4]))
+    cv2.imshow("gimg",gimg)
+    cv2.waitKey(0)
+    return gimg
 
 def tosample(dense):
     n=len(dense)
@@ -275,4 +287,11 @@ n=[1,0,0,0,1,0,0,0,1,0,0,1]
 o=[1,1,1,1,0,0,0,1,1,0,1,1]
 p=[1,0,0,0,1,0,1,0,1,1,0,1]
 q=[1,0,0,0,0,0,0,0,1,0,1,1]
+
+G=toimage([0.49,0.5,0.01],[200,240,180],[2000,144,1200],10000)
+A=toimage([0.05,0.9,0.05],[50,160,180],[120,600,1200],12000)
+M=toimage([0.5,0.49,0.01],[190,200,180],[120,1200,1200],10000)
+K=toimage([0.9,0.05,0.05],[200,130,180],[600,144,1200],10000)
+L=toimage([0.4,0.4,0.2],[190,240,200],[120,144,1200],13000)
+showgeneratedimg([G,A,M,K,L])
 print(BGMreport("pics/l1.jpg")==l)
