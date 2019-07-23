@@ -4,21 +4,23 @@ import cv2
 from matplotlib import pyplot as plt
 from sklearn.mixture import BayesianGaussianMixture
 from sklearn.mixture import GaussianMixture
+import os,sys
+
 def toGM(x,components,means,covs,weights):
     ys=np.zeros((components,len(x)))
     for i in range(components):
         ys[i]=weights[i]/np.sqrt(2*np.pi*covs[i])*np.exp(-(x-means[i])**2/(2*covs[i]))
     return ys
 
-def toimage(weights,means,covs,n_samples):
+def toimage(weightsn,means,covs):#weightsn is how much sample that one component got
     X=np.linspace(0,300,num=300,endpoint=False)
-    Ys=toGM(X,len(means),means,covs,weights)
+    Ys=toGM(X,len(means),means,covs,weightsn)
     for i in range(len(means)):
-        plt.plot(X,n_samples*Ys[i])
+        plt.plot(X,Ys[i])
     dense=np.sum(Ys,axis=0)
-    plt.plot(X,dense*n_samples)
+    plt.plot(X,dense)
     plt.show()
-    denseno=np.reshape(np.uint8(255-dense*n_samples),(300,1))
+    denseno=np.reshape(np.uint8(255-dense*sum(weightsn)),(300,1))
     img=np.tile(denseno,50)
     #cv2.imshow("generated",img)
     #cv2.waitKey(0)
@@ -154,16 +156,20 @@ def BGMreport(path):
     allmeans=[]
     allcovs=[]
     allweights=[]
+    BGM45=np.zeros((45))
     for i in range(5):
         BGM=BayesianGaussianMixture(n_components=n_components,covariance_type='spherical',weight_concentration_prior=0.0000000000001,max_iter=500)
         BGM.fit(samples[i])
         means=np.reshape(BGM.means_,(-1,))
+        BGM45[i*9+3:i*9+6]=means
         allmeans.append(means)
         covs=BGM.covariances_
+        BGM45[i*9+6:i*9+9]=covs
         allcovs.append(covs)
         weights=BGM.weights_
+        BGM45[i*9:i*9+3]=weights*len(samples[i])
         allweights.append(weights)
-    for i in range(5):#visualization
+    """for i in range(5):#visualization
         plt.subplot(2,n_components,i+1),plt.plot(denses[i+1])
         X=np.linspace(0,lofd,num=200,endpoint=False)
         Ys=toGM(X,n_components,allmeans[i],allcovs[i],allweights[i])
@@ -172,7 +178,7 @@ def BGMreport(path):
             plt.subplot(2,n_components,i+1),plt.plot(X,len(samples[i])*Ys[j])
             #plt.subplot(2,n_components,i+1),plt.plot(X,Ys[j])
             plt.ylim(0,255)
-    plt.show()
+    plt.show()"""
     ans=np.zeros((12,))
     pre=np.zeros((5,n_components))
     for i in range(5):###preprocessing the data to avoid peak overlapping(far overlap and near overlap) influence: identify far/near overlap cases and suppress far overlap peaks, amplify near overlap peaks
@@ -228,7 +234,7 @@ def BGMreport(path):
             else:
                 ans[7+i]=1
                 ans[0]=1
-    return ans
+    return ans,BGM45
 """
 def onepeakreport(path):
     t1=130
@@ -293,10 +299,23 @@ o=[1,1,1,1,0,0,0,1,1,0,1,1]
 p=[1,0,0,0,1,0,1,0,1,1,0,1]
 q=[1,0,0,0,0,0,0,0,1,0,1,1]
 
-G=toimage([0.49,0.5,0.01],[200,240,180],[2000,144,1200],10000)
-A=toimage([0.05,0.9,0.05],[50,160,180],[120,600,1200],12000)
-M=toimage([0.5,0.49,0.01],[190,200,180],[120,1200,1200],10000)
-K=toimage([0.9,0.05,0.05],[200,130,180],[600,144,1200],10000)
-L=toimage([0.4,0.4,0.2],[190,240,200],[120,144,1200],13000)
+"""G=toimage([0.49,0.5,0.01]*10000,[200,240,180],[2000,144,1200])
+A=toimage([0.05,0.9,0.05]*12000,[50,160,180],[120,600,1200])
+M=toimage([0.5,0.49,0.01]*10000,[190,200,180],[120,1200,1200])
+K=toimage([0.9,0.05,0.05]*10000,[200,130,180],[600,144,1200])
+L=toimage([0.4,0.4,0.2]*13000,[190,240,200],[120,144,1200])
 showgeneratedimg([G,A,M,K,L])
-print(BGMreport("pics/l1.jpg")==l)
+ans=BGMreport("pics/l1.jpg")
+print(ans[0]==l)
+print(ans[1])"""
+train=[]
+test=[]
+for img in os.listdir("pics/trainpics"):
+    path=os.path.join("pics/trainpics",img)
+    ans=BGMreport(path)
+    train.append(ans[1])
+    test.append(ans[0])
+train=np.array(train)
+test=np.array(test)
+np.savetxt("train.csv",train,delimiter="\t",fmt="%.4f")
+np.savetxt("test.csv",test,delimiter="\t",fmt="%d")
