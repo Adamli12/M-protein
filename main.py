@@ -143,7 +143,7 @@ def GMMreport(path):#maybe combine this with rulebased
 """
 def BGMreport(path):
     t2=15
-    t3=0.07
+    t3=0.081
     n_components=3
     denses,_=finddensefromcut(path)
     maxd=[]
@@ -169,7 +169,9 @@ def BGMreport(path):
         weights=BGM.weights_
         BGM45[i*9:i*9+3]=weights*len(samples[i])
         allweights.append(weights)
-    """for i in range(5):#visualization
+
+
+    for i in range(5):#visualization
         plt.subplot(2,n_components,i+1),plt.plot(denses[i+1])
         X=np.linspace(0,lofd,num=200,endpoint=False)
         Ys=toGM(X,n_components,allmeans[i],allcovs[i],allweights[i])
@@ -178,7 +180,9 @@ def BGMreport(path):
             plt.subplot(2,n_components,i+1),plt.plot(X,len(samples[i])*Ys[j])
             #plt.subplot(2,n_components,i+1),plt.plot(X,Ys[j])
             plt.ylim(0,255)
-    plt.show()"""
+    plt.show()
+
+
     ans=np.zeros((12,))
     pre=np.zeros((5,n_components))
     for i in range(5):###preprocessing the data to avoid peak overlapping(far overlap and near overlap) influence: identify far/near overlap cases and suppress far overlap peaks, amplify near overlap peaks
@@ -281,40 +285,46 @@ def onepeakreport(path):
     abn=[abn3]+abn1+abn2
     return abn
 """
-a=[1,1,0,0,0,0,0,1,0,0,1,0]
-b=[1,0,0,1,0,0,0,0,1,0,1,0]
-c=[1,0,0,0,0,1,0,0,0,1,1,0]
-d=[1,0,1,0,0,0,0,1,0,0,0,1]
-e=[1,0,0,0,1,0,0,0,1,0,0,1]
-f=[1,0,0,0,0,0,1,0,0,1,0,1]
-g=[1,0,0,0,0,0,0,0,0,0,0,1]
-h=[1,0,0,0,0,0,0,0,0,0,1,0]
-i=[1,1,0,0,0,0,0,1,0,0,1,0]
-j=[1,0,1,0,0,0,0,1,0,0,0,1]
-k=[1,1,1,0,0,0,0,1,0,0,1,1]
-l=[1,1,0,1,0,1,0,1,1,1,1,0]
-m=[1,0,1,0,0,0,0,1,0,0,0,1]
-n=[1,0,0,0,1,0,0,0,1,0,0,1]
-o=[1,1,1,1,0,0,0,1,1,0,1,1]
-p=[1,0,0,0,1,0,1,0,1,1,0,1]
-q=[1,0,0,0,0,0,0,0,1,0,1,1]
+gt=[[1,1,0,0,0,0,0,1,0,0,1,0],
+[1,0,0,1,0,0,0,0,1,0,1,0],
+[1,0,0,0,0,1,0,0,0,1,1,0],
+[1,0,1,0,0,0,0,1,0,0,0,1],
+[1,0,0,0,1,0,0,0,1,0,0,1],
+[1,0,0,0,0,0,1,0,0,1,0,1],
+[1,0,0,0,0,0,0,0,0,0,0,1],
+[1,0,0,0,0,0,0,0,0,0,1,0],
+[1,1,0,0,0,0,0,1,0,0,1,0],
+[1,0,1,0,0,0,0,1,0,0,0,1],
+[1,1,1,0,0,0,0,1,0,0,1,1],
+[1,1,0,1,0,1,0,1,1,1,1,0],
+[1,0,1,0,0,0,0,1,0,0,0,1],
+[1,0,0,0,1,0,0,0,1,0,0,1],
+[1,1,1,1,0,0,0,1,1,0,1,1],
+[1,0,0,0,1,0,1,0,1,1,0,1],
+[1,0,0,0,0,0,0,0,1,0,1,1]]
 
 """G=toimage([0.49,0.5,0.01]*10000,[200,240,180],[2000,144,1200])
 A=toimage([0.05,0.9,0.05]*12000,[50,160,180],[120,600,1200])
 M=toimage([0.5,0.49,0.01]*10000,[190,200,180],[120,1200,1200])
 K=toimage([0.9,0.05,0.05]*10000,[200,130,180],[600,144,1200])
 L=toimage([0.4,0.4,0.2]*13000,[190,240,200],[120,144,1200])
-showgeneratedimg([G,A,M,K,L])
-ans=BGMreport("pics/l1.jpg")
-print(ans[0]==l)
-print(ans[1])"""
+showgeneratedimg([G,A,M,K,L])"""
+
+
+ans=BGMreport("pics/trainpics/e1.jpg")
+print(ans[0]==gt[4])
+#print(ans[1])
+
+
 train=[]
 test=[]
+i=0
 for img in os.listdir("pics/trainpics"):
     path=os.path.join("pics/trainpics",img)
     ans=BGMreport(path)
     train.append(ans[1])
-    test.append(ans[0])
+    test.append(ans[0]==gt[i])
+    i+=1
 train=np.array(train)
 test=np.array(test)
 np.savetxt("train.csv",train,delimiter="\t",fmt="%.4f")
