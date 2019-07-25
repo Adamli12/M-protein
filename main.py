@@ -6,6 +6,32 @@ from sklearn.mixture import BayesianGaussianMixture
 from sklearn.mixture import GaussianMixture
 import os,sys
 
+def mean_generator():
+    return 180+40*np.random.randn(3)
+
+def weight_generator():
+    a=np.random.rand(2)
+    a.sort()
+    b=a[0]
+    c=a[1]-a[0]
+    d=1-a[1]
+    return[b,c,d]
+
+def cov_generatorn():
+    a=700+400*np.random.randn(3)
+    for i in range(3):
+        a[i]=max(a[i],600)
+    return a
+
+def cov_generatorgk():
+    a=100+30*np.random.randn(3)
+    for i in range(3):
+        a[i]=max(a[i],10)
+    return a
+
+def sample_generator():
+    return int(11000+50*np.random.randn())
+
 def toGM(x,components,means,covs,weights):
     ys=np.zeros((components,len(x)))
     for i in range(components):
@@ -15,12 +41,14 @@ def toGM(x,components,means,covs,weights):
 def toimage(weightsn,means,covs):#weightsn is how much sample that one component got
     X=np.linspace(0,300,num=300,endpoint=False)
     Ys=toGM(X,len(means),means,covs,weightsn)
+    dense=np.sum(Ys,axis=0)
+    """
     for i in range(len(means)):
         plt.plot(X,Ys[i])
-    dense=np.sum(Ys,axis=0)
     plt.plot(X,dense)
     plt.show()
-    denseno=np.reshape(np.uint8(255-dense*sum(weightsn)),(300,1))
+    """
+    denseno=np.reshape(np.uint8(255-np.clip(dense*sum(weightsn),0,220)),(300,1))
     img=np.tile(denseno,50)
     #cv2.imshow("generated",img)
     #cv2.waitKey(0)
@@ -35,9 +63,9 @@ def showgeneratedimg(imgs):
     rgbgimg[:,:,1]+=gimg
     rgbgimg[:,:,2]+=gimg
     rgbgimg=np.uint8(rgbgimg)
-    cv2.imshow("gimg",rgbgimg)
-    cv2.waitKey(0)
-    return gimg
+    #cv2.imshow("gimg",rgbgimg)
+    #cv2.waitKey(0)
+    return rgbgimg
 
 def tosample(dense):
     n=len(dense)
@@ -116,32 +144,8 @@ def finddensefromcut(path):
         #cv2.imshow("density",img[:,hbounds[i*2]:hbounds[i*2+1]])
         #cv2.waitKey(0)
     return denses,wi
-"""
-def GMMreport(path):#maybe combine this with rulebased
-    n_components=3
-    denses,_=finddensefromcut(path)
-    samples=list()
-    for i in range(1,6):
-        samples.append(np.array(tosample(denses[i])).reshape(-1,1))
-    no=[0,0,0,0,0]
-    for i in range(len(samples)):
-        if len(samples[i])<500:
-            no[i]=1
-    allmeans=[]
-    allcovs=[]
-    allweights=[]
-    for i in range(5):
-        GM=GaussianMixture(n_components=n_components,covariance_type='spherical')
-        GM.fit(samples[i])
-        means=GM.means_
-        allmeans.append(means)
-        covs=GM.covariances_
-        allcovs.append(covs)
-        weights=GM.weights_
-        allweights.append(weights)
-    return 0
-"""
-def BGMreport(path):
+
+def BGMreport(path,visualize=1):
     t2=15
     t3=0.07
     n_components=3
@@ -169,18 +173,17 @@ def BGMreport(path):
         weights=BGM.weights_
         BGM45[i*9:i*9+3]=weights*len(samples[i])
         allweights.append(weights)
-    """
-    for i in range(5):#visualization
-        plt.subplot(2,n_components,i+1),plt.plot(denses[i+1])
-        X=np.linspace(0,lofd,num=200,endpoint=False)
-        Ys=toGM(X,n_components,allmeans[i],allcovs[i],allweights[i])
-        for j in range(n_components):
-            #plt.subplot(1,5,i+1),plt.plot([allmeans[i][j],allmeans[i][j]],[0,255])
-            plt.subplot(2,n_components,i+1),plt.plot(X,len(samples[i])*Ys[j])
-            #plt.subplot(2,n_components,i+1),plt.plot(X,Ys[j])
-            plt.ylim(0,255)
-    plt.show()
-    """
+    if visualize==1:
+        for i in range(5):#visualization
+            plt.subplot(2,n_components,i+1),plt.plot(denses[i+1])
+            X=np.linspace(0,lofd,num=200,endpoint=False)
+            Ys=toGM(X,n_components,allmeans[i],allcovs[i],allweights[i])
+            for j in range(n_components):
+                #plt.subplot(1,5,i+1),plt.plot([allmeans[i][j],allmeans[i][j]],[0,255])
+                plt.subplot(2,n_components,i+1),plt.plot(X,len(samples[i])*Ys[j])
+                #plt.subplot(2,n_components,i+1),plt.plot(X,Ys[j])
+                plt.ylim(0,255)
+        plt.show()
     ans=np.zeros((12,))
     pre=np.zeros((5,n_components))
     for i in range(5):###preprocessing the data to avoid peak overlapping(far overlap and near overlap) influence: identify far/near overlap cases and suppress far overlap peaks, amplify near overlap peaks
@@ -285,6 +288,42 @@ def onepeakreport(path):
     abn=[abn3]+abn1+abn2
     return abn
 """
+def classify_folder(path):
+    train=[]
+    test=[]
+    i=0
+    for img in os.listdir(path):
+        path1=os.path.join(path,img)
+        ans=BGMreport(path1,0)
+        train.append(ans[1])
+        test.append(ans[0])
+        i+=1
+    train=np.array(train)
+    test=np.array(test)
+    np.savetxt(path+"components.csv",train,delimiter="\t",fmt="%.4f")
+    np.savetxt(path+"labels.csv",test,delimiter="\t",fmt="%d")
+    return 0
+
+def generate_pics(pathgk,pathno,num):
+    for i in range(num):
+        G=toimage(weight_generator()*sample_generator(),mean_generator(),cov_generatorgk())
+        A=toimage(weight_generator()*sample_generator(),mean_generator(),cov_generatorn())
+        M=toimage(weight_generator()*sample_generator(),mean_generator(),cov_generatorn())
+        K=toimage(weight_generator()*sample_generator(),mean_generator(),cov_generatorgk())
+        L=toimage(weight_generator()*sample_generator(),mean_generator(),cov_generatorn())
+        img=showgeneratedimg([G,A,M,K,L])
+        cv2.imwrite(pathgk+"/"+str(i)+".jpg",img)
+
+    for i in range(num):
+        G=toimage(weight_generator()*sample_generator(),mean_generator(),cov_generatorn())
+        A=toimage(weight_generator()*sample_generator(),mean_generator(),cov_generatorn())
+        M=toimage(weight_generator()*sample_generator(),mean_generator(),cov_generatorn())
+        K=toimage(weight_generator()*sample_generator(),mean_generator(),cov_generatorn())
+        L=toimage(weight_generator()*sample_generator(),mean_generator(),cov_generatorn())
+        img=showgeneratedimg([G,A,M,K,L])
+        cv2.imwrite(pathno+"/"+str(i)+".jpg",img)
+    return 0
+
 gt=[[1,1,0,0,0,0,0,1,0,0,1,0],
 [1,0,0,1,0,0,0,0,1,0,1,0],
 [1,0,0,0,0,1,0,0,0,1,1,0],
@@ -303,29 +342,10 @@ gt=[[1,1,0,0,0,0,0,1,0,0,1,0],
 [1,0,0,0,1,0,1,0,1,1,0,1],
 [1,0,0,0,0,0,0,0,1,0,1,1]]
 
-"""G=toimage([0.49,0.5,0.01]*10000,[200,240,180],[2000,144,1200])
-A=toimage([0.05,0.9,0.05]*12000,[50,160,180],[120,600,1200])
-M=toimage([0.5,0.49,0.01]*10000,[190,200,180],[120,1200,1200])
-K=toimage([0.9,0.05,0.05]*10000,[200,130,180],[600,144,1200])
-L=toimage([0.4,0.4,0.2]*13000,[190,240,200],[120,144,1200])
-showgeneratedimg([G,A,M,K,L])"""
+generate_pics("generate_gkpics","generate_nopics",100)
+classify_folder("generate_gkpics")
+classify_folder("generate_nopics")
 
-
-ans=BGMreport("pics/trainpics/e1.jpg")
+"""ans=BGMreport("pics/trainpics/e1.jpg",1)
 print(ans[0]==gt[4])
-#print(ans[1])
-
-
-train=[]
-test=[]
-i=0
-for img in os.listdir("pics/trainpics"):
-    path=os.path.join("pics/trainpics",img)
-    ans=BGMreport(path)
-    train.append(ans[1])
-    test.append(ans[0]==gt[i])
-    i+=1
-train=np.array(train)
-test=np.array(test)
-np.savetxt("train.csv",train,delimiter="\t",fmt="%.4f")
-np.savetxt("test.csv",test,delimiter="\t",fmt="%d")
+#print(ans[1])"""
