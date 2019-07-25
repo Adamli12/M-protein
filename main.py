@@ -143,7 +143,7 @@ def GMMreport(path):#maybe combine this with rulebased
 """
 def BGMreport(path):
     t2=15
-    t3=0.081
+    t3=0.07
     n_components=3
     denses,_=finddensefromcut(path)
     maxd=[]
@@ -158,7 +158,7 @@ def BGMreport(path):
     allweights=[]
     BGM45=np.zeros((45))
     for i in range(5):
-        BGM=BayesianGaussianMixture(n_components=n_components,covariance_type='spherical',weight_concentration_prior=0.0000000000001,max_iter=500)
+        BGM=BayesianGaussianMixture(n_components=n_components,covariance_type='spherical',weight_concentration_prior=0.000000000001,max_iter=500)
         BGM.fit(samples[i])
         means=np.reshape(BGM.means_,(-1,))
         BGM45[i*9+3:i*9+6]=means
@@ -169,8 +169,7 @@ def BGMreport(path):
         weights=BGM.weights_
         BGM45[i*9:i*9+3]=weights*len(samples[i])
         allweights.append(weights)
-
-
+    """
     for i in range(5):#visualization
         plt.subplot(2,n_components,i+1),plt.plot(denses[i+1])
         X=np.linspace(0,lofd,num=200,endpoint=False)
@@ -181,8 +180,7 @@ def BGMreport(path):
             #plt.subplot(2,n_components,i+1),plt.plot(X,Ys[j])
             plt.ylim(0,255)
     plt.show()
-
-
+    """
     ans=np.zeros((12,))
     pre=np.zeros((5,n_components))
     for i in range(5):###preprocessing the data to avoid peak overlapping(far overlap and near overlap) influence: identify far/near overlap cases and suppress far overlap peaks, amplify near overlap peaks
@@ -192,12 +190,14 @@ def BGMreport(path):
                 if j<l:
                     if allweights[i][j]/allweights[i][l]>2.5 or allweights[i][j]/allweights[i][l]<0.4:#ignore when weight difference is too large
                         continue
-                    if abs(allmeans[i][j]-allmeans[i][l])<lofd/t2:#near overlap situation is when a sharp peak is on a mild one. it happens when monoclonal peak has a background polyclonal peak. here we amplify both peaks' weights so that it will be detected as abnormal in the classification step
-                        neww=allweights[i][j]+allweights[i][l]
-                        allweights[i][j]=neww*2
-                        allweights[i][l]=neww*2
-                        continue
-                    if allcovs[i][j]/allcovs[i][l]>2.5 or allcovs[i][j]/allcovs[i][l]<0.4:#if the cov difference is large than it will be ignored from far overlap because there should be two peaks in the original density plot
+                    if allcovs[i][j]/allcovs[i][l]>2.37 or allcovs[i][j]/allcovs[i][l]<0.426:#if the cov difference is large than it will be ignored from far overlap because there should be two peaks in the original density plot
+                    #near overlap situation is when a sharp peak is on a mild one. it happens when monoclonal peak has a background polyclonal peak. here we amplify the sharp peaks' weight so that it will be detected as abnormal in the classification step
+                        if abs(allmeans[i][j]-allmeans[i][l])<3.5*np.sqrt(max(allcovs[i][j],allcovs[i][l])):
+                            neww=allweights[i][j]+allweights[i][l]
+                            if allcovs[i][j]/allcovs[i][l]<0.426:
+                                allweights[i][j]=neww*2
+                            else:
+                                allweights[i][l]=neww*2
                         continue
                     if allcovs[i][j]<70 or allcovs[i][l]<70:#if one of the considered peak has very small variance, then it should not be far overlap situation where the original peak is mild
                         continue
