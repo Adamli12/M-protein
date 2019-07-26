@@ -191,15 +191,15 @@ def BGMreport(path,visualize=1):
         for j in range(n_components):
             for l in range(n_components):
                 if j<l:
-                    if allweights[i][j]/allweights[i][l]>2.5 or allweights[i][j]/allweights[i][l]<0.4:#ignore when weight difference is too large
+                    if allweights[i][j]/allweights[i][l]>3.5 or allweights[i][j]/allweights[i][l]<0.2857:#ignore when weight difference is too large
                         continue
                     if allcovs[i][j]/allcovs[i][l]>2.37 or allcovs[i][j]/allcovs[i][l]<0.426:#if the cov difference is large than it will be ignored from far overlap because there should be two peaks in the original density plot
                     #near overlap situation is when a sharp peak is on a mild one. it happens when monoclonal peak has a background polyclonal peak. here we amplify the sharp peaks' weight so that it will be detected as abnormal in the classification step
                         if abs(allmeans[i][j]-allmeans[i][l])<3.5*np.sqrt(max(allcovs[i][j],allcovs[i][l])):
                             neww=allweights[i][j]+allweights[i][l]
-                            if allcovs[i][j]/allcovs[i][l]<0.426:
+                            if allcovs[i][j]/allcovs[i][l]<0.426 and allweights[i][j]>0.2:
                                 allweights[i][j]=neww*2
-                            else:
+                            elif allcovs[i][j]/allcovs[i][l]>2.37 and allweights[i][l]>0.2:
                                 allweights[i][l]=neww*2
                         continue
                     if allcovs[i][j]<70 or allcovs[i][l]<70:#if one of the considered peak has very small variance, then it should not be far overlap situation where the original peak is mild
@@ -288,7 +288,7 @@ def onepeakreport(path):
     abn=[abn3]+abn1+abn2
     return abn
 """
-def classify_folder(path):
+def classify_folder(path,gt=None,testflag=0):
     train=[]
     test=[]
     i=0
@@ -296,7 +296,10 @@ def classify_folder(path):
         path1=os.path.join(path,img)
         ans=BGMreport(path1,0)
         train.append(ans[1])
-        test.append(ans[0])
+        if testflag==1:
+            test.append(ans[0]==gt[i])
+        else:
+            test.append(ans[0])
         i+=1
     train=np.array(train)
     test=np.array(test)
@@ -342,10 +345,12 @@ gt=[[1,1,0,0,0,0,0,1,0,0,1,0],
 [1,0,0,0,1,0,1,0,1,1,0,1],
 [1,0,0,0,0,0,0,0,1,0,1,1]]
 
-generate_pics("generate_gkpics","generate_nopics",100)
+"""generate_pics("generate_gkpics","generate_nopics",100)
 classify_folder("generate_gkpics")
-classify_folder("generate_nopics")
+classify_folder("generate_nopics")"""
 
-"""ans=BGMreport("pics/trainpics/e1.jpg",1)
-print(ans[0]==gt[4])
-#print(ans[1])"""
+#ans=BGMreport("pics/trainpics/h.jpg",1)
+#print(ans[0]==gt[7])
+#print(ans[1])
+
+classify_folder("pics/trainpics",gt,testflag=1)
