@@ -162,7 +162,7 @@ def BGMreport(path,visualize=1):
     allweights=[]
     BGM45=np.zeros((45))
     for i in range(5):
-        BGM=BayesianGaussianMixture(n_components=n_components,covariance_type='spherical',weight_concentration_prior=0.000000000001,max_iter=1500)
+        BGM=BayesianGaussianMixture(n_components=n_components,covariance_type='spherical',weight_concentration_prior=0.000000000001,max_iter=500)
         BGM.fit(samples[i])
         means=np.reshape(BGM.means_,(-1,))
         BGM45[i*9+3:i*9+6]=means
@@ -191,7 +191,7 @@ def BGMreport(path,visualize=1):
         for j in range(n_components):
             for l in range(n_components):
                 if j<l:
-                    if allweights[i][j]/allweights[i][l]>3.5 or allweights[i][j]/allweights[i][l]<0.2857:#ignore when weight difference is too large
+                    if allweights[i][j]/allweights[i][l]>3 or allweights[i][j]/allweights[i][l]<0.3333:#ignore when weight difference is too large
                         continue
                     if allcovs[i][j]/allweights[i][j]/allcovs[i][l]*allweights[i][l]/abs(allmeans[i][j]-allmeans[i][l])*np.sqrt(max(allcovs[i][j],allcovs[i][l]))>2 or allcovs[i][l]/allweights[i][l]/allcovs[i][j]*allweights[i][j]/abs(allmeans[i][j]-allmeans[i][l])*np.sqrt(max(allcovs[i][j],allcovs[i][l]))>2:#if the cov difference is large than it will be ignored from far overlap because there should be two peaks in the original density plot
                     #near overlap situation is when a sharp peak is on a mild one. it happens when monoclonal peak has a background polyclonal peak. here we amplify the sharp peaks' weight so that it will be detected as abnormal in the classification step
@@ -305,8 +305,8 @@ def classify_folder(path,gt=None,testflag=0):
         i+=1
     train=np.array(train)
     test=np.array(test)
-    np.savetxt(path+"/components.csv",train,delimiter="\t",fmt="%.4f")
-    np.savetxt(path+"/labels.csv",test,delimiter="\t",fmt="%d")
+    np.savetxt("components.csv",train,delimiter="\t",fmt="%.4f")
+    np.savetxt("labels.csv",test,delimiter="\t",fmt="%d")
     return 0
 
 def generate_pics(pathgk,pathno,num):
@@ -351,8 +351,8 @@ gt=[[1,1,0,0,0,0,0,1,0,0,1,0],
 classify_folder("generate_gkpics")
 classify_folder("generate_nopics")"""
 
-#ans=BGMreport("pics/i2.jpg",1)
-#print(ans[0]==gt[8])
+ans=BGMreport("pics/trainpics/k1.jpg",1)
+print(ans[0]==gt[10])
 #print(ans[1])
 
 classify_folder("pics/trainpics",gt,testflag=1)
