@@ -162,7 +162,7 @@ def BGMreport(path,visualize=1):
     allweights=[]
     BGM45=np.zeros((45))
     for i in range(5):
-        BGM=BayesianGaussianMixture(n_components=n_components,covariance_type='spherical',weight_concentration_prior=0.000000000001,max_iter=500)
+        BGM=BayesianGaussianMixture(n_components=n_components,covariance_type='spherical',weight_concentration_prior=0.000000000001,max_iter=1500)
         BGM.fit(samples[i])
         means=np.reshape(BGM.means_,(-1,))
         BGM45[i*9+3:i*9+6]=means
@@ -193,14 +193,16 @@ def BGMreport(path,visualize=1):
                 if j<l:
                     if allweights[i][j]/allweights[i][l]>3.5 or allweights[i][j]/allweights[i][l]<0.2857:#ignore when weight difference is too large
                         continue
-                    if allcovs[i][j]/allcovs[i][l]>2.37 or allcovs[i][j]/allcovs[i][l]<0.426:#if the cov difference is large than it will be ignored from far overlap because there should be two peaks in the original density plot
+                    if allcovs[i][j]/allweights[i][j]/allcovs[i][l]*allweights[i][l]/abs(allmeans[i][j]-allmeans[i][l])*np.sqrt(max(allcovs[i][j],allcovs[i][l]))>2 or allcovs[i][l]/allweights[i][l]/allcovs[i][j]*allweights[i][j]/abs(allmeans[i][j]-allmeans[i][l])*np.sqrt(max(allcovs[i][j],allcovs[i][l]))>2:#if the cov difference is large than it will be ignored from far overlap because there should be two peaks in the original density plot
                     #near overlap situation is when a sharp peak is on a mild one. it happens when monoclonal peak has a background polyclonal peak. here we amplify the sharp peaks' weight so that it will be detected as abnormal in the classification step
                         if abs(allmeans[i][j]-allmeans[i][l])<3.5*np.sqrt(max(allcovs[i][j],allcovs[i][l])):
                             neww=allweights[i][j]+allweights[i][l]
-                            if allcovs[i][j]/allcovs[i][l]<0.426 and allweights[i][j]>0.2:
-                                allweights[i][j]=neww*2
-                            elif allcovs[i][j]/allcovs[i][l]>2.37 and allweights[i][l]>0.2:
-                                allweights[i][l]=neww*2
+                            if allcovs[i][l]/allweights[i][l]/allcovs[i][j]*allweights[i][j]>1 and allweights[i][j]>0.15:
+                                if allcovs[i][j]<400:
+                                    allweights[i][j]=neww*2
+                            else:
+                                if allcovs[i][l]<400:
+                                    allweights[i][l]=neww*2
                         continue
                     if allcovs[i][j]<70 or allcovs[i][l]<70:#if one of the considered peak has very small variance, then it should not be far overlap situation where the original peak is mild
                         continue
@@ -303,8 +305,8 @@ def classify_folder(path,gt=None,testflag=0):
         i+=1
     train=np.array(train)
     test=np.array(test)
-    np.savetxt(path+"components.csv",train,delimiter="\t",fmt="%.4f")
-    np.savetxt(path+"labels.csv",test,delimiter="\t",fmt="%d")
+    np.savetxt(path+"/components.csv",train,delimiter="\t",fmt="%.4f")
+    np.savetxt(path+"/labels.csv",test,delimiter="\t",fmt="%d")
     return 0
 
 def generate_pics(pathgk,pathno,num):
@@ -349,8 +351,8 @@ gt=[[1,1,0,0,0,0,0,1,0,0,1,0],
 classify_folder("generate_gkpics")
 classify_folder("generate_nopics")"""
 
-#ans=BGMreport("pics/trainpics/h.jpg",1)
-#print(ans[0]==gt[7])
+#ans=BGMreport("pics/i2.jpg",1)
+#print(ans[0]==gt[8])
 #print(ans[1])
 
 classify_folder("pics/trainpics",gt,testflag=1)
