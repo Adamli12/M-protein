@@ -353,8 +353,8 @@ gt=[[1,1,0,0,0,0,0,1,0,0,1,0],
 classify_folder("generate_gkpics","gk")
 classify_folder("generate_nopics","no")"""
 
-#ans=BGMreport("pics/trainpics/k1.jpg",1)
+ans=BGMreport("wrongpics/0.jpg",1)
 #print(ans[0]==gt[10])
 #print(ans[1])
 
-classify_folder("pics/trainpics","train",gt,testflag=1)
+classify_folder("wrongpics","wrong",None)
