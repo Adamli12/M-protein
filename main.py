@@ -290,7 +290,7 @@ def onepeakreport(path):
     abn=[abn3]+abn1+abn2
     return abn
 """
-def classify_folder(path,gt=None,testflag=0):
+def classify_folder(path,pre,gt=None,testflag=0):
     train=[]
     test=[]
     i=0
@@ -303,10 +303,12 @@ def classify_folder(path,gt=None,testflag=0):
         else:
             test.append(ans[0])
         i+=1
+        if i%20==0:
+            print(i)
     train=np.array(train)
     test=np.array(test)
-    np.savetxt("components.csv",train,delimiter="\t",fmt="%.4f")
-    np.savetxt("labels.csv",test,delimiter="\t",fmt="%d")
+    np.savetxt(pre+"components.csv",train,delimiter="\t",fmt="%.4f")
+    np.savetxt(pre+"labels.csv",test,delimiter="\t",fmt="%d")
     return 0
 
 def generate_pics(pathgk,pathno,num):
@@ -348,11 +350,11 @@ gt=[[1,1,0,0,0,0,0,1,0,0,1,0],
 [1,0,0,0,0,0,0,0,1,0,1,1]]
 
 """generate_pics("generate_gkpics","generate_nopics",100)
-classify_folder("generate_gkpics")
-classify_folder("generate_nopics")"""
+classify_folder("generate_gkpics","gk")
+classify_folder("generate_nopics","no")"""
 
-ans=BGMreport("pics/trainpics/k1.jpg",1)
-print(ans[0]==gt[10])
+#ans=BGMreport("pics/trainpics/k1.jpg",1)
+#print(ans[0]==gt[10])
 #print(ans[1])
 
-classify_folder("pics/trainpics",gt,testflag=1)
+classify_folder("pics/trainpics","train",gt,testflag=1)
