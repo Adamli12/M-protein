@@ -75,22 +75,18 @@ def tosample(dense):
             sample.append(i)
     return sample
 
-def todensity(img):
-    #hi=img.shape[0]
+def todensity(img):#这个地方改成五分的就再试试
     wi=img.shape[1]
-    """cv2.imshow("d",img)
-    cv2.waitKey(0)"""
     img = cv2.fastNlMeansDenoising(img,None,20,7,21)
-    """plt.subplot(121),plt.imshow(img,cmap="gray")
-    plt.subplot(122),plt.imshow(img1,cmap="gray")
-    plt.show()"""
+    plt.imshow(img,cmap="gray")
+    plt.show()
     img2 = img[:,int(wi*0.25):int(wi*0.75)]
     dense=255-np.mean(img2,axis=1)
     dense[150]=dense[150]+1###BGM will not be able to calculate 0 sample situation
     dense[151]=dense[151]+1
     dense[152]=dense[152]+1
-    """plt.plot(dense)
-    plt.show()"""
+    plt.plot(dense)
+    plt.show()
     return dense
 """
 def finddense(path):
