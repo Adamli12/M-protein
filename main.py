@@ -75,18 +75,18 @@ def tosample(dense):
             sample.append(i)
     return sample
 
-def todensity(img):#这个地方改成五分的就再试试
+def todensity(img):
     wi=img.shape[1]
     img = cv2.fastNlMeansDenoising(img,None,20,7,21)
-    plt.imshow(img,cmap="gray")
-    plt.show()
+    #plt.imshow(img,cmap="gray")
+    #plt.show()
     img2 = img[:,int(wi*0.25):int(wi*0.75)]
     dense=255-np.mean(img2,axis=1)
     dense[150]=dense[150]+1###BGM will not be able to calculate 0 sample situation
     dense[151]=dense[151]+1
     dense[152]=dense[152]+1
-    plt.plot(dense)
-    plt.show()
+    #plt.plot(dense)
+    #plt.show()
     return dense
 """
 def finddense(path):
@@ -122,36 +122,36 @@ def finddense(path):
         denses.append(todensity(img[vbounds[0]:vbounds[1],hbounds[i*2]:hbounds[i*2+1]]))
     return denses,wi
 """
-def finddensefromcut(path):
+def finddensefromcut(path,cut_n):
     img = cv2.imread(path,0)
     #hi=img.shape[0]
     wi=img.shape[1]
     hbounds=[]
-    wiband=int(wi/6)
+    wiband=int(wi/cut_n)
     flag=0
     mi=int(wi/20)
-    for i in range(6):
+    for i in range(cut_n):
         hbounds.append(flag+mi)
         flag+=wiband
         hbounds.append(flag-mi)
     denses=[]
-    for i in range(6):
+    for i in range(cut_n):
         denses.append(todensity(img[:,hbounds[i*2]:hbounds[i*2+1]]))
         #cv2.imshow("density",img[:,hbounds[i*2]:hbounds[i*2+1]])
         #cv2.waitKey(0)
     return denses,wi
 
-def BGMreport(path,visualize=1):
+def BGMreport(path,visualize=1,cut_n=6):
     t2=15
     t3=0.07
     n_components=3
-    denses,_=finddensefromcut(path)
+    denses,_=finddensefromcut(path,cut_n)
     maxd=[]
-    for dense in denses[1:]:
+    for dense in denses[(cut_n-5):]:
         maxd.append(max(dense))
     lofd=len(denses[0])
     samples=list()
-    for i in range(1,6):#sampling for BGM
+    for i in range((cut_n-5),cut_n):#sampling for BGM
         samples.append(np.array(tosample(denses[i])).reshape(-1,1))
     allmeans=[]
     allcovs=[]
@@ -170,14 +170,16 @@ def BGMreport(path,visualize=1):
         BGM45[i*9:i*9+3]=weights*len(samples[i])
         allweights.append(weights)
     if visualize==1:
-        for i in range(5):#visualization
-            plt.subplot(2,n_components,i+1),plt.plot(denses[i+1])
+        l=0
+        for i in range(cut_n-5,cut_n):#visualization
+            l+=1
+            plt.subplot(2,n_components,l),plt.plot(denses[i])
             X=np.linspace(0,lofd,num=200,endpoint=False)
-            Ys=toGM(X,n_components,allmeans[i],allcovs[i],allweights[i])
+            Ys=toGM(X,n_components,allmeans[l-1],allcovs[l-1],allweights[l-1])
             for j in range(n_components):
-                #plt.subplot(1,5,i+1),plt.plot([allmeans[i][j],allmeans[i][j]],[0,255])
-                plt.subplot(2,n_components,i+1),plt.plot(X,len(samples[i])*Ys[j])
-                #plt.subplot(2,n_components,i+1),plt.plot(X,Ys[j])
+                #plt.subplot(1,5,l),plt.plot([allmeans[l-1][j],allmeans[l-1][j]],[0,255])
+                plt.subplot(2,n_components,l),plt.plot(X,len(samples[l-1])*Ys[j])
+                #plt.subplot(2,n_components,l),plt.plot(X,Ys[j])
                 plt.ylim(0,255)
         plt.show()
     ans=np.zeros((12,))
@@ -195,12 +197,14 @@ def BGMreport(path,visualize=1):
                             neww=allweights[i][j]+allweights[i][l]
                             if allcovs[i][l]/allweights[i][l]/allcovs[i][j]*allweights[i][j]>1 and allweights[i][j]>0.15:
                                 if allcovs[i][j]<400:
-                                    allweights[i][j]=neww*2
+                                    allweights[i][j]=neww
                             else:
                                 if allcovs[i][l]<400:
-                                    allweights[i][l]=neww*2
+                                    allweights[i][l]=neww
                         continue
-                    if allcovs[i][j]<70 or allcovs[i][l]<70:#if one of the considered peak has very small variance, then it should not be far overlap situation where the original peak is mild
+                    if allcovs[i][j]/allweights[i][j]/len(samples[i])<t3/2.5 or allcovs[i][l]/allweights[i][l]/len(samples[i])<t3/2.5:#if one of the considered peak has very small variance, then it should not be far overlap situation where the original peak is mild
+                        continue
+                    if allcovs[i][j]<70 or allcovs[i][l]<70:
                         continue
                     elif abs(allmeans[i][j]-allmeans[i][l])<3.5*np.sqrt(max(allcovs[i][j],allcovs[i][l])):#far overlap situation where there is only a mild peak in the original density plot, and GMM model break it down to two sharper peaks to fit the guassian curves more accurately. here we just suppress the peaks and thus we cannot determine the column is abnormal because of the two considered components
                         pre[i][j]=pre[i][l]=1             
@@ -219,7 +223,7 @@ def BGMreport(path,visualize=1):
                             if allweights[i][k]<0.1 or allweights[j][l]<0.1:
                                 continue
                             else:
-                                if allcovs[i][k]/allweights[i][k]/len(samples[i])>t3 or allcovs[j][l]/allweights[j][l]/len(samples[j])>t3:###the t figure, represents the sharpness of the peak. just variance is not enough, we need to consider n_samples and weights too. actually I am going to change variance to the square root of variance to make sure the dimension is right.
+                                if allcovs[i][k]/allweights[i][k]/len(samples[i])>t3 or allcovs[j][l]/allweights[j][l]/len(samples[j])>t3:###the t figure, represents the sharpness of the peak. just variance is not enough, we need to consider n_samples and weights too.
                                     continue
                                 else:
                                     ans[i*2+j-2]=1 
@@ -286,13 +290,13 @@ def onepeakreport(path):
     abn=[abn3]+abn1+abn2
     return abn
 """
-def classify_folder(path,pre,gt=None,testflag=0):
+def classify_folder(path,pre,gt=None,testflag=0,cut_n=6):
     train=[]
     test=[]
     i=0
     for img in os.listdir(path):
         path1=os.path.join(path,img)
-        ans=BGMreport(path1,0)
+        ans=BGMreport(path1,0,cut_n)
         train.append(ans[1])
         if testflag==1:
             test.append(ans[0]==gt[i])
@@ -349,8 +353,8 @@ gt=[[1,1,0,0,0,0,0,1,0,0,1,0],
 classify_folder("generate_gkpics","gk")
 classify_folder("generate_nopics","no")"""
 
-ans=BGMreport("wrongpics/0.jpg",1)
-#print(ans[0]==gt[10])
+ans=BGMreport("pics/trainpics/e1.jpg",1,cut_n=6)
+print(ans[0]==gt[4])
 #print(ans[1])
 
-classify_folder("wrongpics","wrong",None)
+classify_folder("pics/trainpics","train",gt,1,cut_n=6,)
