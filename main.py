@@ -293,11 +293,13 @@ def onepeakreport(path):
     return abn
 """
 def read_label(path,ans):
-    label=np.loadtxt("path",delimiter="\t")
+    label=np.loadtxt(path,delimiter="\t")
     wr=[]
     for i in range(len(label)):
-        if ans!=label[i][-5:]:
-            wr.append(i)
+        for j in range(5):
+            if ans[j]!=label[i][-5:][j]:
+                wr.append(i)
+                break
     return wr
     
 def classify_folder(path,pre,gt=None,testflag=0,cut_n=6,numsort=0):
@@ -372,13 +374,13 @@ gt=[[1,1,0,0,0,0,0,1,0,0,1,0],
 [1,0,0,0,1,0,1,0,1,1,0,1],
 [1,0,0,0,0,0,0,0,1,0,1,1]]
 
-generate_pics("generate_gkpics","generate_nopics",100)
+"""generate_pics("generate_gkpics","generate_nopics",100)
 classify_folder("generate_gkpics","gk",cut_n=5,numsort=1)
-classify_folder("generate_nopics","no",cut_n=5,numsort=1)
-read_label("gklabels",[1,0,0,1,0])
+classify_folder("generate_nopics","no",cut_n=5,numsort=1)"""
+print(read_label("nolabels.csv",[0,0,0,0,0]))
 
-"""ans=BGMreport("wrongpics/32.jpg",1,cut_n=5)
+ans=BGMreport("pics/trainpics/j1.jpg",1,cut_n=6)
 print(ans[0])
 #print(ans[1])
 
-classify_folder("pics/trainpics","train",gt=gt,testflag=1,cut_n=6,numsort=0)"""
+classify_folder("pics/trainpics","train",gt=gt,testflag=1,cut_n=6,numsort=0)
