@@ -5,6 +5,8 @@ from matplotlib import pyplot as plt
 from sklearn.mixture import BayesianGaussianMixture
 from sklearn.mixture import GaussianMixture
 import os,sys
+def mean(a,b):
+    return (a+b)/2
 
 def mean_generator():
     return 180+40*np.random.randn(3)
@@ -191,8 +193,8 @@ def BGMreport(path,visualize=1,cut_n=6):
                 if j<l:
                     if allweights[i][j]/allweights[i][l]>3 or allweights[i][j]/allweights[i][l]<0.3333:#ignore when weight difference is too large
                         continue
-                    if allcovs[i][j]/allweights[i][j]/allcovs[i][l]*allweights[i][l]/abs(allmeans[i][j]-allmeans[i][l])*np.sqrt(max(allcovs[i][j],allcovs[i][l]))>2 or allcovs[i][l]/allweights[i][l]/allcovs[i][j]*allweights[i][j]/abs(allmeans[i][j]-allmeans[i][l])*np.sqrt(max(allcovs[i][j],allcovs[i][l]))>2:#if the cov difference is large than it will be ignored from far overlap because there should be two peaks in the original density plot
-                    #near overlap situation is when a sharp peak is on a mild one. it happens when monoclonal peak has a background polyclonal peak. here we amplify the sharp peaks' weight so that it will be detected as abnormal in the classification step
+                    if allcovs[i][j]/allweights[i][j]/allcovs[i][l]*allweights[i][l]/abs(allmeans[i][j]-allmeans[i][l])*mean(np.sqrt(allcovs[i][j]),np.sqrt(allcovs[i][l]))>2 or allcovs[i][l]/allweights[i][l]/allcovs[i][j]*allweights[i][j]/abs(allmeans[i][j]-allmeans[i][l])*mean(np.sqrt(allcovs[i][j]),np.sqrt(allcovs[i][l]))>2:#if the cov difference is large than it will be ignored from far overlap because there should be two peaks in the original density plot
+                    #near overlap situation is when a sharp peak is on a mild one. it happens when monoclonal peak has a background polyclonal peak. here we amplify the sharp peaks' weight when their cov difference is large enough or their distance is close enough so that it will be detected as abnormal in the classification step
                         if abs(allmeans[i][j]-allmeans[i][l])<3.5*np.sqrt(max(allcovs[i][j],allcovs[i][l])):
                             neww=allweights[i][j]+allweights[i][l]
                             if allcovs[i][l]/allweights[i][l]/allcovs[i][j]*allweights[i][j]>1 and allweights[i][j]>0.15:
@@ -290,19 +292,41 @@ def onepeakreport(path):
     abn=[abn3]+abn1+abn2
     return abn
 """
-def classify_folder(path,pre,gt=None,testflag=0,cut_n=6):
+def read_label(path,ans):
+    label=np.loadtxt("path",delimiter="\t")
+    wr=[]
+    for i in range(len(label)):
+        if ans!=label[i][-5:]:
+            wr.append(i)
+    return wr
+    
+def classify_folder(path,pre,gt=None,testflag=0,cut_n=6,numsort=0):
     i=0
-    train=np.zeros((len(os.listdir(path)),45))
-    test=np.zeros((len(os.listdir(path)),12))
+    if numsort==0:
+        train=[]
+        test=[]
+    else:
+        train=np.zeros((len(os.listdir(path)),45))
+        test=np.zeros((len(os.listdir(path)),12))
     for img in os.listdir(path):
-        nu=int(img[:-4])
+        if numsort==1:
+            nu=int(img[:-4])
         path1=os.path.join(path,img)
         ans=BGMreport(path1,0,cut_n)
-        train[nu]=(ans[1])
-        if testflag==1:
-            test[nu]=(ans[0]==gt[i])
+        if numsort==0:
+            train.append(ans[1])
         else:
-            test[nu]=(ans[0])
+            train[nu]=(ans[1])
+        if testflag==1:
+            if numsort==0:
+                test.append(ans[0]==gt[i])
+            else:
+                test[nu]=(ans[0]==gt[i])
+        else:
+            if numsort==0:
+                test.append(ans[0])
+            else:
+                test[nu]=(ans[0])
         i+=1
         if i%20==0:
             print(i)
@@ -348,12 +372,13 @@ gt=[[1,1,0,0,0,0,0,1,0,0,1,0],
 [1,0,0,0,1,0,1,0,1,1,0,1],
 [1,0,0,0,0,0,0,0,1,0,1,1]]
 
-"""generate_pics("generate_gkpics","generate_nopics",100)
-classify_folder("generate_gkpics","gk",cut_n=5)
-classify_folder("generate_nopics","no",cut_n=5)"""
+generate_pics("generate_gkpics","generate_nopics",100)
+classify_folder("generate_gkpics","gk",cut_n=5,numsort=1)
+classify_folder("generate_nopics","no",cut_n=5,numsort=1)
+read_label("gklabels",[1,0,0,1,0])
 
-ans=BGMreport("generate_gkpics/3.jpg",1,cut_n=5)
+"""ans=BGMreport("wrongpics/32.jpg",1,cut_n=5)
 print(ans[0])
 #print(ans[1])
 
-classify_folder("generate_gkpics","gk",1,cut_n=5)
+classify_folder("pics/trainpics","train",gt=gt,testflag=1,cut_n=6,numsort=0)"""
