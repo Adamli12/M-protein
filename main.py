@@ -306,10 +306,10 @@ def classify_folder(path,pre,gt=None,testflag=0,cut_n=6,numsort=0):
     i=0
     if numsort==0:
         #train=[]
-        test=[]
+        label=[]
     else:
         #train=np.zeros((len(os.listdir(path)),45))
-        test=np.zeros((len(os.listdir(path)),12))
+        label=np.zeros((len(os.listdir(path)),12))
     for img in os.listdir(path):
         if numsort==1:
             nu=int(img[:-4])
@@ -317,36 +317,36 @@ def classify_folder(path,pre,gt=None,testflag=0,cut_n=6,numsort=0):
         ans=BGMreport(path1,0,cut_n)
         if testflag==1:
             if numsort==0:
-                test.append(ans[0]==gt[i])
+                label.append(ans[0]==gt[i])
             else:
-                test[nu]=(ans[0]==gt[i])
+                label[nu]=(ans[0]==gt[i])
         else:
             if numsort==0:
-                test.append(ans[0])
+                label.append(ans[0])
             else:
-                test[nu]=(ans[0])
+                label[nu]=(ans[0])
         i+=1
         if i%20==0:
             print(i)
     #np.savetxt(pre+"components.csv",train,delimiter="\t",fmt="%.4f")
-    np.savetxt(pre+"labels.csv",test,delimiter="\t",fmt="%d")
+    np.savetxt(pre+"labels.csv",label,delimiter="\t",fmt="%d")
     return 0
 
 def folder_to_data(path,pre,cut_n=6):
     i=0
     train=np.zeros((len(os.listdir(path)*5),9))
-    test=np.zeros((len(os.listdir(path)*5)))
+    label=np.zeros((len(os.listdir(path)*5)))
     for img in os.listdir(path):
         path1=os.path.join(path,img)
         ans=BGMreport(path1,0,cut_n)
         for j in range(5):
             train[i*5+j]=ans[1][j*9:j*9+9]
-            test[i*5+j]=ans[0][7+j]
+            label[i*5+j]=ans[0][7+j]
         i+=1
         if i%20==0:
             print(i)
     np.savetxt(pre+"train.csv",train,delimiter="\t",fmt="%.4f")
-    np.savetxt(pre+"test.csv",test,delimiter="\t",fmt="%d")
+    np.savetxt(pre+"label.csv",label,delimiter="\t",fmt="%d")
     return 0
 
 def generate_pics(pathgk,pathno,num):
