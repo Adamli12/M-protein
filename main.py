@@ -387,9 +387,9 @@ gt=[[1,1,0,0,0,0,0,1,0,0,1,0],
 [1,0,0,0,1,0,1,0,1,1,0,1],
 [1,0,0,0,0,0,0,0,1,0,1,1]]
 
-"""generate_pics("generate_gkpics","generate_nopics",100)
-classify_folder("generate_gkpics","gk",cut_n=5,numsort=1)
-classify_folder("generate_nopics","no",cut_n=5,numsort=1)"""
+generate_pics("generate_gkpics","generate_nopics",100)
+folder_to_data("generate_gkpics","gk",5,)
+folder_to_data("generate_nopics","no",5)
 print(read_label("nolabels.csv",[0,0,0,0,0]))
 
 folder_to_data("pics/trainpics","t",6)
