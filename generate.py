@@ -53,8 +53,9 @@ class discriminator(nn.Module):
 class generator(nn.Module):
     def __init__(self):
         super(generator, self).__init__()
+        self.z_dimension=9
         self.gen = nn.Sequential(
-            nn.Linear(z_dimension, 20),
+            nn.Linear(self.z_dimension, 20),
             nn.ReLU(True),
             nn.Linear(20, 9), 
             nn.Tanh())
@@ -66,64 +67,93 @@ class generator(nn.Module):
 class GANmodel():
     def __init__(self):
         self.batch_size = 1
-        self.num_epoch = 100
-        self.z_dimension = 9#for g
+        self.init_num_epoch = 100
+        self.iter_num_epoch = 10
+        self.k=1
         self.G=generator()
         self.D=discriminator()
         if torch.cuda.is_available():
-            D = D.cuda()
-            G = G.cuda()
+            self.D = self.D.cuda()
+            self.G = self.G.cuda()
         self.criterion=nn.BCELoss()
-        self.d_optimizer=torch.optim.Adam(D.parameters(), lr=0.0003)
-        self.g_optimizer=torch.optim.Adam(G.parameters(), lr=0.0003)
+        self.d_optimizer=torch.optim.Adam(self.D.parameters(), lr=0.0003)
+        self.g_optimizer=torch.optim.Adam(self.G.parameters(), lr=0.0003)
         self.dataset=Mdataset()
         self.dataloader=data.DataLoader(dataset=self.dataset, batch_size=self.batch_size, shuffle=True)
     
-    def init_train():
-        for epoch in range(self.num_epoch):
-            for i, (feature, _) in enumerate(dataloader):
-                num_img = img.size(0)#把img像上一行全部改成feature！不用view！！！
+    def init_train(self):
+        for param in self.D.parameters():
+            param.requires_grad=True
+        for epoch in range(self.init_num_epoch):
+            for i, (feature, _) in enumerate(self.dataloader):
+                num_f = feature.size(0)
                 # =================train discriminator
-                img = img.view(num_img, -1)
-                real_img = Variable(img).cuda()
-                real_label = Variable(torch.ones(num_img)).cuda()
-                fake_label = Variable(torch.zeros(num_img)).cuda()
+                real_f = Variable(feature).cuda()
+                real_label = Variable(torch.ones(num_f)).cuda()
+                fake_label = Variable(torch.zeros(num_f)).cuda()
         
-                # compute loss of real_img
-                real_out = D(real_img)
-                d_loss_real = criterion(real_out, real_label)
+                # compute loss of real feature
+                real_out = self.D(real_f)
+                d_loss_real = self.criterion(real_out, real_label)
                 real_scores = real_out  # closer to 1 means better
         
-                # compute loss of fake_img
-                z = Variable(torch.randn(num_img, z_dimension)).cuda()
-                fake_img = G(z)
-                fake_out = D(fake_img)
-                d_loss_fake = criterion(fake_out, fake_label)
+                # compute loss of fake feature
+                z = Variable(torch.randn(num_f, self.G.z_dimension)).cuda()
+                fake_f = self.G(z)
+                fake_out = self.D(fake_f)
+                d_loss_fake = self.criterion(fake_out, fake_label)
                 fake_scores = fake_out  # closer to 0 means better
         
                 # bp and optimize
                 d_loss = d_loss_real + d_loss_fake
-                d_optimizer.zero_grad()
+                self.d_optimizer.zero_grad()
                 d_loss.backward()
-                d_optimizer.step()
+                self.d_optimizer.step()
         
                 # ===============train generator
-                # compute loss of fake_img
-                z = Variable(torch.randn(num_img, z_dimension)).cuda()
-                fake_img = G(z)
-                output = D(fake_img)
-                g_loss = criterion(output, real_label)
+                # compute loss of fake feature
+                z = Variable(torch.randn(num_f, self.G.z_dimension)).cuda()
+                fake_f = self.G(z)
+                output = self.D(fake_f)
+                g_loss = self.criterion(output, real_label)
         
                 # bp and optimize
-                g_optimizer.zero_grad()
+                self.g_optimizer.zero_grad()
                 g_loss.backward()
-                g_optimizer.step()
+                self.g_optimizer.step()
         
                 if (i + 1) % 100 == 0:
-                    print('Epoch [{}/{}], d_loss: {:.6f}, g_loss: {:.6f} '
-                        'D real: {:.6f}, D fake: {:.6f}'.format(
-                            epoch, self.num_epoch, d_loss.data[0], g_loss.data[0],
-                            real_scores.data.mean(), fake_scores.data.mean()))
- 
-torch.save(G.state_dict(), './generator.pth')
-torch.save(D.state_dict(), './discriminator.pth')
+                    print('Epoch [{}/{}], d_loss: {:.6f}, g_loss: {:.6f}, D real: {:.6f}, D fake: {:.6f}'.format(epoch self.init_num_epoch, d_loss.data[0], g_loss.data[0], real_scores.data.mean(), fake_scores.data.mean()))
+        return 0
+
+    def G_train(self,svm):
+        for param in self.D.parameters():
+            param.requires_grad=False
+
+        for epoch in range(self.iter_num_epoch):
+            real_label=torch.ones(self.batch_size).cuda()
+            z=torch.randn(self.batch_size,self.G.z_dimension).cuda()
+            fake_f=self.G(z)
+            output=self.D(fake_f)#fake score, close to 1 means better
+            svm_edge_loss=0
+            for feature in fake_f:
+                svm_edge_loss+=abs(svm.decision_function(feature))#可以这么写吗？？？应该会传不过去吧
+            g_loss=self.criterion(output,real_label)+self.k*svm_edge_loss
+
+            self.g_optimizer.zero_grad()
+            g_loss.backward()
+            self.g_optimizer.step()
+            
+            print("Epoch[{}/{}], g_loss:{:.6f}, D fake:{:.6f}".format(epoch,self.iter_num_epoch,g_loss.data[0],output.data.mean()))
+        return 0
+
+    def generate(self,g_num,g_path):
+        z=torch.randn(g_num,self.G.z_dimension).cuda()
+        fake_f=self.G(z)
+        np.savetxt(g_path,fake_f,delimiter="\t")
+        return 0
+
+    def save(self):
+        torch.save(self.G.state_dict(), './generator.pth')
+        torch.save(self.D.state_dict(), './discriminator.pth')
+        return 0

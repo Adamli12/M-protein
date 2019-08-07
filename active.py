@@ -10,29 +10,28 @@ from generate import *
 
 #need to implement an SVM with incremental property and yield margin distance
 #add residual feature
-def init_train_G(gan,realdata):
+def train_svm(svm,labeleddata):
+    feature_sc,label=labeleddata
+    svm.fit(feature_sc,label)
+    pred=svm.predict(scaler.transform(feature_sc))
+    truelabel=pred==label
+    for i in range(len(truelabel)):
+        if truelabel[i]==0:
+            print("picture",i//5,"column",i%5)
+    print("the train dataset score",svm.score(feature_sc,label))
+    return 0
+
+def expert_label(gfeature_path,allfeature_path,glabel_path):
     
 
-def init_train_svm(svm,labeleddata):
 
-def train_G(svm,gan):
-
-def expert_label(gtrain_path,alltrain_path,glabel_path):
-
-
-
-trainpath="ttrain.csv"
+featurepath="ttrain.csv"
 labelpath="tlabel.csv"
-train=np.loadtxt(trainpath,delimiter="\t")
+feature=np.loadtxt(featurepath,delimiter="\t")
 label=np.loadtxt(labelpath,delimiter="\t")
 scaler=StandardScaler()
-train_sc=scaler.fit_transform(train)
+feature_sc=scaler.fit_transform(feature)
+labeleddata=(feature_sc,label)
 svm=SGDClassifier()
-svm.fit(train_sc,label)
-pred=svm.predict(scaler.transform(train))
-truelabel=pred==label
-for i in range(len(truelabel)):
-    if truelabel[i]==0:
-        print("picture",i//5,"column",i%5)
-print(svm.score(train,label))
+train_svm(svm,labeleddata)
 
