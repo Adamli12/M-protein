@@ -12,25 +12,23 @@ import pandas as pd
 import numpy as np
 
 class Mdataset(data.Dataset):
-    def __init__(self, path=".", train=True):
-        self.path = path
+    def __init__(self, dat, train=True):
         self.train = train
         if self.train:
-            self.train_features=torch.from_numpy(np.loadtxt("ttrain.csv",delimiter="\t"))
-            self.train_labels =torch.from_numpy(np.loadtxt("tlabel.csv",delimiter="\t"))
+            self.train_features=torch.from_numpy(dat)
         else:
             raise RuntimeError("Not implemented")
  
     def __getitem__(self, index):
         if self.train:
-            feature,label = self.train_features[index], self.train_labels[index]
+            feature= self.train_features[index]
         else:
             raise RuntimeError("Not implemented")
-        return feature,label
+        return feature
  
     def __len__(self):
         if self.train:
-            return len(self.train_labels)
+            return self.train_features.shape[0]
         else:
             raise RuntimeError("Not implemented")
 
@@ -65,7 +63,7 @@ class generator(nn.Module):
         return x
 
 class GANmodel():
-    def __init__(self):
+    def __init__(self,dat):
         self.batch_size = 1
         self.init_num_epoch = 100
         self.iter_num_epoch = 10
@@ -78,14 +76,14 @@ class GANmodel():
         self.criterion=nn.BCELoss()
         self.d_optimizer=torch.optim.Adam(self.D.parameters(), lr=0.0003)
         self.g_optimizer=torch.optim.Adam(self.G.parameters(), lr=0.0003)
-        self.dataset=Mdataset()
+        self.dataset=Mdataset(dat)
         self.dataloader=data.DataLoader(dataset=self.dataset, batch_size=self.batch_size, shuffle=True)
     
     def init_train(self):
         for param in self.D.parameters():
             param.requires_grad=True
         for epoch in range(self.init_num_epoch):
-            for i, (feature, _) in enumerate(self.dataloader):
+            for i, feature in enumerate(self.dataloader):
                 num_f = feature.size(0)
                 # =================train discriminator
                 real_f = Variable(feature).cuda()
@@ -123,7 +121,7 @@ class GANmodel():
                 self.g_optimizer.step()
         
                 if (i + 1) % 100 == 0:
-                    print('Epoch [{}/{}], d_loss: {:.6f}, g_loss: {:.6f}, D real: {:.6f}, D fake: {:.6f}'.format(epoch self.init_num_epoch, d_loss.data[0], g_loss.data[0], real_scores.data.mean(), fake_scores.data.mean()))
+                    print('Epoch [{}/{}], d_loss: {:.6f}, g_loss: {:.6f}, D real: {:.6f}, D fake: {:.6f}'.format(epoch, self.init_num_epoch, d_loss.data[0], g_loss.data[0], real_scores.data.mean(), fake_scores.data.mean()))
         return 0
 
     def G_train(self,svm):
@@ -147,7 +145,8 @@ class GANmodel():
             print("Epoch[{}/{}], g_loss:{:.6f}, D fake:{:.6f}".format(epoch,self.iter_num_epoch,g_loss.data[0],output.data.mean()))
         return 0
 
-    def generate(self,g_num,g_path):
+    def generate(self,g_num):
+        g_path="data/expert/generated.txt"
         z=torch.randn(g_num,self.G.z_dimension).cuda()
         fake_f=self.G(z)
         np.savetxt(g_path,fake_f,delimiter="\t")
