@@ -6,9 +6,9 @@ from sklearn.mixture import GaussianMixture
 import os,sys
 from sklearn.linear_model import SGDClassifier
 from sklearn.preprocessing import StandardScaler
-from generate import *
+from generate import GANmodel
 import pickle
-from main import *
+from main import toimage
 import copy
 
 def save_in_train_all(dat,mode):
@@ -41,16 +41,16 @@ def showpic(feature):
 def train_svm(svm,labeleddata):
     feature_sc=labeleddata[:,:-1]
     label=labeleddata[:,-1]
-    svm.fit(feature_sc,label)
-    pred=svm.predict(scaler.transform(feature_sc))
+    svm.partial_fit(feature_sc,label)
+    """pred=svm.predict(feature_sc)
     truelabel=pred==label
     for i in range(len(truelabel)):
         if truelabel[i]==0:
-            print("picture",i//5,"column",i%5)
-    print("the train dataset score",svm.score(feature_sc,label))
+            print("picture",i//5,"column",i%5)"""
+    print("the latest train dataset score",svm.score(feature_sc,label))
     return 0
 
-def expert_label(g_num,feature_num,iter_num):
+def expert_label(g_num,feature_num):
     path="data/expert/generated.txt"
     generated=np.loadtxt(path,delimiter="\t")
     trainadd=np.zeros((g_num,feature_num+1))
@@ -62,19 +62,25 @@ def expert_label(g_num,feature_num,iter_num):
         trainadd[i,-1]=ans
         i+=1
     save_in_train_all(trainadd,1)
+    return 0
 
 #data path
 unlabeledpath="ttrain.csv"
 featurepath="ttrain.csv"
 labelpath="tlabel.csv"
+testfeaturepath="ttrain.csv"
+testlabelpath="tlabel.csv"
 feature=np.loadtxt(featurepath,delimiter="\t")
 label=np.loadtxt(labelpath,delimiter="\t")
 ufeature=np.loadtxt(unlabeledpath,delimiter="\t")
+testfeature=np.loadtxt(testfeaturepath,delimiter="\t")
+testlabel=np.loadtxt(testlabelpath,delimiter="\t")
 
 #scaling
 scaler=StandardScaler()
-feature_sc=scaler.fit_transform(feature)
-ufeature_sc=scaler.transform(ufeature)
+ufeature_sc=scaler.fit_transform(ufeature)#using large unlabeled data to normalize
+feature_sc=scaler.transform(feature)
+testfeature_sc=scaler.transform(testfeature)
 
 #preparing
 labeleddata=np.hstack(feature_sc,label)
@@ -89,5 +95,22 @@ gan1=GANmodel(ufeature_sc)
 gan1.init_train()#用来生成generate
 gan2=copy.deepcopy(gan1)#用来生成balancing
 
+#begin training process step2
+expert_batch_num=10
+balancing_ratio=0.5
+iter_num=10
+for i in range(iter_num):
+    gan1.G_train(svm)
+    gan1.generate(expert_batch_num)#put data in generated.txt in expert folder
+    gan2.generate_balance(expert_batch_num*balancing_ratio)#put data in balancing.txt
+    expert_label(expert_batch_num,(labeleddata.shape[1]-1))#put data in generated.txt
+    traindata1=np.loadtxt("data/train/balancing.txt")
+    traindata2=np.loadtxt("data/train/generated.txt")
+    traindata=np.vstack(traindata1,traindata2)
+    train_svm(svm,traindata)
+
+#test
+pred=svm.predict(scaler.transform(feature_sc))
+print("test score:",svm.score(testfeature_sc,testlabel))
 
 

@@ -10,6 +10,7 @@ from torch.utils import data
 import os
 import pandas as pd
 import numpy as np
+from active import save_in_train_all
 
 class Mdataset(data.Dataset):
     def __init__(self, dat, train=True):
@@ -150,6 +151,19 @@ class GANmodel():
         z=torch.randn(g_num,self.G.z_dimension).cuda()
         fake_f=self.G(z)
         np.savetxt(g_path,fake_f,delimiter="\t")
+        return 0
+
+    def generate_balance(self,svm,g_num,mindis):
+        z=torch.randn(g_num,self.G.z_dimension).cuda()
+        fake_f=self.G(z)
+        deletelist=[]
+        for i in range(len(fake_f)):
+            if abs(svm.decision_function(fake_f[i]))<mindis:
+                deletelist.append(i)
+        fake_f=np.delete(fake_f,deletelist,axis=0)
+        label=svm.predict(fake_f)
+        fake_f=np.hstack(fake_f,label)
+        save_in_train_all(fake_f,0)
         return 0
 
     def save(self):
