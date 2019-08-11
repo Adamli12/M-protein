@@ -8,9 +8,22 @@ from torchvision.utils import save_image
 from torch.autograd import Variable
 from torch.utils import data
 import os
-import pandas as pd
 import numpy as np
-from active import save_in_train_all
+
+def save_in_train_all(dat,mode):
+    if mode==1:
+        np.savetxt("data/train/generated.txt",dat)
+        gen_str=pickle.dumps(dat)
+        f=open("data/all/generated.txt","a")
+        f.write(gen_str+"\n")
+        f.close()
+    if mode==0:
+        np.savetxt("data/train/balancing.txt",dat)
+        gen_str=pickle.dumps(dat)
+        f=open("data/all/balancing.txt","a")
+        f.write(gen_str+"\n")
+        f.close()
+    return 0
 
 class Mdataset(data.Dataset):
     def __init__(self, dat, train=True):
@@ -66,8 +79,8 @@ class generator(nn.Module):
 class GANmodel():
     def __init__(self,dat):
         self.batch_size = 1
-        self.init_num_epoch = 100
-        self.iter_num_epoch = 10
+        self.init_num_epoch = 10
+        self.iter_num_epoch = 100
         self.k=1
         self.G=generator()
         self.D=discriminator()
@@ -87,9 +100,9 @@ class GANmodel():
             for i, feature in enumerate(self.dataloader):
                 num_f = feature.size(0)
                 # =================train discriminator
-                real_f = Variable(feature).cuda()
-                real_label = Variable(torch.ones(num_f)).cuda()
-                fake_label = Variable(torch.zeros(num_f)).cuda()
+                real_f = feature.cuda()
+                real_label = torch.ones(num_f).cuda()
+                fake_label = torch.zeros(num_f).cuda()
         
                 # compute loss of real feature
                 real_out = self.D(real_f)
@@ -125,6 +138,12 @@ class GANmodel():
                     print('Epoch [{}/{}], d_loss: {:.6f}, g_loss: {:.6f}, D real: {:.6f}, D fake: {:.6f}'.format(epoch, self.init_num_epoch, d_loss.data[0], g_loss.data[0], real_scores.data.mean(), fake_scores.data.mean()))
         return 0
 
+    def decision_distance(svm,x):
+        w=torch.tensor(svm.coef_)
+        b=torch.tensor(svm.intercept_)
+        dis=torch.abs(w*x+b)/torch.norm(w)
+        return dis
+
     def G_train(self,svm):
         for param in self.D.parameters():
             param.requires_grad=False
@@ -136,7 +155,8 @@ class GANmodel():
             output=self.D(fake_f)#fake score, close to 1 means better
             svm_edge_loss=0
             for feature in fake_f:
-                svm_edge_loss+=abs(svm.decision_function(feature))#可以这么写吗？？？应该会传不过去吧
+                svm_edge_loss+=decision_distance(svm,feature)
+            svm_edge_loss=svm_edge_loss/len(fake_f)
             g_loss=self.criterion(output,real_label)+self.k*svm_edge_loss
 
             self.g_optimizer.zero_grad()
