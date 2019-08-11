@@ -387,7 +387,7 @@ gt=[[1,1,0,0,0,0,0,1,0,0,1,0],
 [1,0,0,0,1,0,1,0,1,1,0,1],
 [1,0,0,0,0,0,0,0,1,0,1,1]]
 
-generate_pics("generate_gkpics","generate_nopics",100)
+"""generate_pics("generate_gkpics","generate_nopics",100)
 folder_to_data("generate_gkpics","gk",5,)
 folder_to_data("generate_nopics","no",5)
 print(read_label("nolabels.csv",[0,0,0,0,0]))
@@ -398,4 +398,4 @@ ans=BGMreport("pics/trainpics/b.jpg",1,cut_n=6)
 print(ans[0])
 #print(ans[1])
 
-classify_folder("pics/trainpics","train",gt=gt,testflag=1,cut_n=6,numsort=0)
+classify_folder("pics/trainpics","train",gt=gt,testflag=1,cut_n=6,numsort=0)"""

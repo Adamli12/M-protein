@@ -15,14 +15,16 @@ def save_in_train_all(dat,mode):
     if mode==1:
         np.savetxt("data/train/generated.txt",dat)
         gen_str=pickle.dumps(dat)
-        f=open("data/all/generated.txt","a")
-        f.write(gen_str+"\n")
+        num=len(os.listdir("data/all/generated"))
+        f=open("data/all/generated/"+str(num)+".txt","wb")
+        f.write(gen_str)
         f.close()
     if mode==0:
         np.savetxt("data/train/balancing.txt",dat)
         gen_str=pickle.dumps(dat)
-        f=open("data/all/balancing.txt","a")
-        f.write(gen_str+"\n")
+        num=len(os.listdir("data/all/balancing"))
+        f=open("data/all/balancing/"+str(num)+".txt","wb")
+        f.write(gen_str)
         f.close()
     return 0
 
@@ -83,7 +85,8 @@ feature_sc=scaler.transform(feature)
 testfeature_sc=scaler.transform(testfeature)
 
 #preparing
-labeleddata=np.hstack(feature_sc,label)
+label=np.reshape(label,(60,1))
+labeleddata=np.hstack((feature_sc,label))
 save_in_train_all(labeleddata,0)
 svm=SGDClassifier()
 
@@ -106,7 +109,7 @@ for i in range(iter_num):
     expert_label(expert_batch_num,(labeleddata.shape[1]-1))#put data in generated.txt
     traindata1=np.loadtxt("data/train/balancing.txt")
     traindata2=np.loadtxt("data/train/generated.txt")
-    traindata=np.vstack(traindata1,traindata2)
+    traindata=np.vstack((traindata1,traindata2))
     train_svm(svm,traindata)
 
 #test
