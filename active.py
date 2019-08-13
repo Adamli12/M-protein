@@ -43,7 +43,7 @@ def showpic(feature):
 def train_svm(svm,labeleddata):
     feature_sc=labeleddata[:,:-1]
     label=labeleddata[:,-1]
-    svm.partial_fit(feature_sc,label)
+    svm.partial_fit(feature_sc,label,classes=np.unique(label))
     """pred=svm.predict(feature_sc)
     truelabel=pred==label
     for i in range(len(truelabel)):
@@ -105,7 +105,7 @@ iter_num=10
 for i in range(iter_num):
     gan1.G_train(svm)
     gan1.generate(expert_batch_num)#put data in generated.txt in expert folder
-    gan2.generate_balance(expert_batch_num*balancing_ratio)#put data in balancing.txt
+    gan2.generate_balance(svm,expert_batch_num*balancing_ratio,0.5)#put data in balancing.txt
     expert_label(expert_batch_num,(labeleddata.shape[1]-1))#put data in generated.txt
     traindata1=np.loadtxt("data/train/balancing.txt")
     traindata2=np.loadtxt("data/train/generated.txt")
