@@ -34,35 +34,50 @@ def showpic(feature):
     covs=feature[6:9]
     img=toimage(weights,means,covs)
     cv2.imshow("generated",img)
-    cv2.waitKey(0)
+    cv2.waitKey(2500)
+    cv2.destroyAllWindows()
     return 0
 
 
 #need to implement an SVM with incremental property and yield margin distance
 #add residual feature
-def train_svm(svm,labeleddata):
+def train_svm(svm,traindatab,traindatag):
+    if type(traindatab)==type(None):
+        labeleddata=traindatag
+    else:
+        labeleddata=np.vstack((traindatab,traindatag))
     feature_sc=labeleddata[:,:-1]
     label=labeleddata[:,-1]
-    svm.partial_fit(feature_sc,label,classes=np.unique(label))
+    svm.partial_fit(feature_sc,label,classes=[0,1])
     """pred=svm.predict(feature_sc)
     truelabel=pred==label
     for i in range(len(truelabel)):
         if truelabel[i]==0:
             print("picture",i//5,"column",i%5)"""
-    print("the latest train dataset score",svm.score(feature_sc,label))
+    testf=traindatag[:,:-1]
+    testl=traindatag[:,-1]
+    print("the latest train dataset score",svm.score(testf,testl))
     return 0
 
-def expert_label(g_num,feature_num):
+def expert_label(g_num,feature_num,scaler):
     path="data/expert/generated.txt"
     generated=np.loadtxt(path,delimiter="\t")
     trainadd=np.zeros((g_num,feature_num+1))
-    i=0
+    trainadd[:,:feature_num]=generated
+    generated=scaler.inverse_transform(generated)
+    j=0
     for feature in generated:
+        for i in range(len(feature)):
+            if i>5 and feature[i]<0:
+                feature[i-6]=1
+                feature[i]=1000
+                continue
+            if feature[i]<0:
+                feature[i]=0
         showpic(feature)
         ans=input("please enter answer:(1 for abnormal, 0 for normal)")
-        trainadd[i,:-1]=feature
-        trainadd[i,-1]=ans
-        i+=1
+        trainadd[j,-1]=ans
+        j+=1
     save_in_train_all(trainadd,1)
     return 0
 
@@ -84,6 +99,7 @@ ufeature_sc=scaler.fit_transform(ufeature)#using large unlabeled data to normali
 feature_sc=scaler.transform(feature)
 testfeature_sc=scaler.transform(testfeature)
 
+
 #preparing
 label=np.reshape(label,(60,1))
 labeleddata=np.hstack((feature_sc,label))
@@ -93,7 +109,7 @@ svm=SGDClassifier()
 
 #begin training process step1
 traindata=np.loadtxt("data/train/balancing.txt")
-train_svm(svm,traindata)
+train_svm(svm,None,traindata)
 gan1=GANmodel(ufeature_sc)
 gan1.init_train()#用来生成generate
 gan2=copy.deepcopy(gan1)#用来生成balancing
@@ -106,11 +122,10 @@ for i in range(iter_num):
     gan1.G_train(svm)
     gan1.generate(expert_batch_num)#put data in generated.txt in expert folder
     gan2.generate_balance(svm,expert_batch_num*balancing_ratio,0.5)#put data in balancing.txt
-    expert_label(expert_batch_num,(labeleddata.shape[1]-1))#put data in generated.txt
-    traindata1=np.loadtxt("data/train/balancing.txt")
-    traindata2=np.loadtxt("data/train/generated.txt")
-    traindata=np.vstack((traindata1,traindata2))
-    train_svm(svm,traindata)
+    expert_label(expert_batch_num,(labeleddata.shape[1]-1),scaler)#put data in generated.txt
+    traindatab=np.loadtxt("data/train/balancing.txt")
+    traindatag=np.loadtxt("data/train/generated.txt")
+    train_svm(svm,traindatab,traindatag)
 
 #test
 pred=svm.predict(scaler.transform(feature_sc))

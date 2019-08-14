@@ -50,7 +50,7 @@ def toimage(weightsn,means,covs):#weightsn is how much sample that one component
     plt.plot(X,dense)
     plt.show()
     """
-    denseno=np.reshape(np.uint8(255-np.clip(dense*sum(weightsn),0,220)),(300,1))
+    denseno=np.reshape(np.uint8(255-np.clip(dense,0,220)),(300,1))
     img=np.tile(denseno,50)
     #cv2.imshow("generated",img)
     #cv2.waitKey(0)
@@ -351,20 +351,20 @@ def folder_to_data(path,pre,cut_n=6):
 
 def generate_pics(pathgk,pathno,num):
     for i in range(num):
-        G=toimage(weight_generator()*sample_generator(),mean_generator(),cov_generatorgk())
-        A=toimage(weight_generator()*sample_generator(),mean_generator(),cov_generatorn())
-        M=toimage(weight_generator()*sample_generator(),mean_generator(),cov_generatorn())
-        K=toimage(weight_generator()*sample_generator(),mean_generator(),cov_generatorgk())
-        L=toimage(weight_generator()*sample_generator(),mean_generator(),cov_generatorn())
+        G=toimage(np.array(weight_generator())*sample_generator(),mean_generator(),cov_generatorgk())
+        A=toimage(np.array(weight_generator())*sample_generator(),mean_generator(),cov_generatorn())
+        M=toimage(np.array(weight_generator())*sample_generator(),mean_generator(),cov_generatorn())
+        K=toimage(np.array(weight_generator())*sample_generator(),mean_generator(),cov_generatorgk())
+        L=toimage(np.array(weight_generator())*sample_generator(),mean_generator(),cov_generatorn())
         img=showgeneratedimg([G,A,M,K,L])
         cv2.imwrite(pathgk+"/"+str(i)+".jpg",img)
 
     for i in range(num):
-        G=toimage(weight_generator()*sample_generator(),mean_generator(),cov_generatorn())
-        A=toimage(weight_generator()*sample_generator(),mean_generator(),cov_generatorn())
-        M=toimage(weight_generator()*sample_generator(),mean_generator(),cov_generatorn())
-        K=toimage(weight_generator()*sample_generator(),mean_generator(),cov_generatorn())
-        L=toimage(weight_generator()*sample_generator(),mean_generator(),cov_generatorn())
+        G=toimage(np.array(weight_generator())*sample_generator(),mean_generator(),cov_generatorn())
+        A=toimage(np.array(weight_generator())*sample_generator(),mean_generator(),cov_generatorn())
+        M=toimage(np.array(weight_generator())*sample_generator(),mean_generator(),cov_generatorn())
+        K=toimage(np.array(weight_generator())*sample_generator(),mean_generator(),cov_generatorn())
+        L=toimage(np.array(weight_generator())*sample_generator(),mean_generator(),cov_generatorn())
         img=showgeneratedimg([G,A,M,K,L])
         cv2.imwrite(pathno+"/"+str(i)+".jpg",img)
     return 0
@@ -387,7 +387,8 @@ gt=[[1,1,0,0,0,0,0,1,0,0,1,0],
 [1,0,0,0,1,0,1,0,1,1,0,1],
 [1,0,0,0,0,0,0,0,1,0,1,1]]
 
-"""generate_pics("generate_gkpics","generate_nopics",100)
+"""
+generate_pics("generate_gkpics","generate_nopics",100)
 folder_to_data("generate_gkpics","gk",5,)
 folder_to_data("generate_nopics","no",5)
 print(read_label("nolabels.csv",[0,0,0,0,0]))

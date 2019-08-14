@@ -96,6 +96,8 @@ class GANmodel():
         self.g_optimizer=torch.optim.Adam(self.G.parameters(), lr=0.0003)
         self.dataset=Mdataset(dat)
         self.dataloader=data.DataLoader(dataset=self.dataset, batch_size=self.batch_size, shuffle=True)
+        self.meanflag=0
+        self.dismean=0
     
     def init_train(self):
         writer=SummaryWriter(comment="init_train")
@@ -201,17 +203,19 @@ class GANmodel():
 
     def generate_balance(self,svm,g_num,dis_filter):
         dissum=0
-        for feature in self.dataset.train_features:
-            dissum+=abs(svm.decision_function(feature.reshape(1,-1)))
-        dismean=dissum/len(self.dataset.train_features)
-        mindis=dis_filter*dismean
-        z=torch.randn(int(10000),self.G.z_dimension)
+        if self.meanflag==0:
+            for feature in self.dataset.train_features:
+                dissum+=abs((self.decision_distance(svm,feature)).detach().numpy())
+            self.dismean=dissum/len(self.dataset.train_features)
+        self.meanflag=1
+        mindis=dis_filter*self.dismean
+        z=torch.randn(int(50*g_num),self.G.z_dimension)
         if torch.cuda.is_available():
             z=z.cuda()
         fake_f=self.G(z).detach().numpy()
         deletelist=[]
         for i in range(len(fake_f)):
-            if abs(svm.decision_function(fake_f[i].reshape(1,-1)))<mindis:
+            if abs((self.decision_distance(svm,torch.tensor(fake_f[i]))).detach().numpy())<mindis:
                 deletelist.append(i)
         fake_f=np.delete(fake_f,deletelist,axis=0)
         li=range(len(fake_f))
