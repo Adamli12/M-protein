@@ -11,23 +11,7 @@ import os
 import numpy as np
 from tensorboardX import SummaryWriter
 import pickle
-
-def save_in_train_all(dat,mode):
-    if mode==1:
-        np.savetxt("data/train/generated.txt",dat)
-        gen_str=pickle.dumps(dat)
-        num=len(os.listdir("data/all/generated"))
-        f=open("data/all/generated/"+str(num)+".txt","wb")
-        f.write(gen_str)
-        f.close()
-    if mode==0:
-        np.savetxt("data/train/balancing.txt",dat)
-        gen_str=pickle.dumps(dat)
-        num=len(os.listdir("data/all/balancing"))
-        f=open("data/all/balancing/"+str(num)+".txt","wb")
-        f.write(gen_str)
-        f.close()
-    return 0
+import main
 
 class Mdataset(data.Dataset):
     def __init__(self, dat, train=True):
@@ -56,7 +40,7 @@ class discriminator(nn.Module):
         super(discriminator, self).__init__()
         self.dis = nn.Sequential(
             nn.Linear(9, 20),
-            nn.LeakyReLU(0.2),
+            nn.LeakyReLU(0.2,inplace=True),
             nn.Linear(20, 1),
             nn.Sigmoid())
  
@@ -72,8 +56,12 @@ class generator(nn.Module):
         self.z_dimension=9
         self.gen = nn.Sequential(
             nn.Linear(self.z_dimension, 20),
-            nn.ReLU(True),
-            nn.Linear(20, 9), 
+            nn.BatchNorm1d(20),
+            nn.LeakyReLU(0.2,inplace=True),
+            nn.Linear(20, 20),
+            nn.BatchNorm1d(20),
+            nn.LeakyReLU(0.2,inplace=True),
+            nn.Linear(20, 9),
             nn.Tanh())
  
     def forward(self, x):
@@ -82,22 +70,20 @@ class generator(nn.Module):
 
 class GANmodel():
     def __init__(self,dat):
-        self.batch_size = 1
-        self.init_num_epoch = 100
-        self.iter_num_epoch = 100
-        self.k=1
+        self.batch_size = 10
+        self.init_num_epoch = 500
+        self.iter_num_epoch = 250
+        self.k=20
         self.G=generator()
         self.D=discriminator()
         if torch.cuda.is_available():
             self.D = self.D.cuda()
             self.G = self.G.cuda()
         self.criterion=nn.BCELoss()
-        self.d_optimizer=torch.optim.Adam(self.D.parameters(), lr=0.0003)
-        self.g_optimizer=torch.optim.Adam(self.G.parameters(), lr=0.0003)
+        self.d_optimizer=torch.optim.Adam(self.D.parameters(), lr=0.001)
+        self.g_optimizer=torch.optim.Adam(self.G.parameters(), lr=0.001)
         self.dataset=Mdataset(dat)
         self.dataloader=data.DataLoader(dataset=self.dataset, batch_size=self.batch_size, shuffle=True)
-        self.meanflag=0
-        self.dismean=0
     
     def init_train(self):
         writer=SummaryWriter(comment="init_train")
@@ -107,8 +93,8 @@ class GANmodel():
             for i, feature in enumerate(self.dataloader):
                 num_f = feature.size(0)
                 real_f=torch.tensor(feature, dtype=torch.float32)
-                real_label = torch.ones(num_f)
-                fake_label = torch.zeros(num_f)
+                real_label = torch.randn(num_f)/10+1
+                fake_label = torch.clamp(torch.randn(num_f)/10,min=0)
                 # =================train discriminator
                 if torch.cuda.is_available():
                     real_f = real_f.cuda()
@@ -130,7 +116,7 @@ class GANmodel():
                 fake_score = fake_out.mean(dim=0).item()  # closer to 0 means better
         
                 # bp and optimize
-                d_loss = d_loss_real + d_loss_fake
+                d_loss = (d_loss_real + d_loss_fake)/2
                 self.d_optimizer.zero_grad()
                 d_loss.backward()
                 self.d_optimizer.step()
@@ -148,7 +134,8 @@ class GANmodel():
                 self.g_optimizer.zero_grad()
                 g_loss.backward()
                 self.g_optimizer.step()
-            print('Epoch [{}/{}], d_loss: {:.6f}, g_loss: {:.6f}, D real: {:.6f}, D fake: {:.6f}'.format(epoch, self.init_num_epoch, d_loss.item(), g_loss.item(), real_score, fake_score))
+            if (epoch+1)%50==0:
+                print('Epoch [{}/{}], d_loss: {:.6f}, g_loss: {:.6f}, D real: {:.6f}, D fake: {:.6f}'.format(epoch, self.init_num_epoch, d_loss.item(), g_loss.item(), real_score, fake_score))
             writer.add_scalars("init_train_loss",{"d_loss":d_loss.item(),"g_loss":g_loss.item()},epoch)
             writer.add_scalars("init_train_score",{"d_real_score":real_score,"d_fake_score":fake_score},epoch)
         writer.close()
@@ -168,13 +155,13 @@ class GANmodel():
             param.requires_grad=False
 
         for epoch in range(self.iter_num_epoch):
-            real_label=torch.ones(self.batch_size)
+            real_label = torch.randn(self.batch_size)/10+1
             z=torch.randn(self.batch_size,self.G.z_dimension)
             if torch.cuda.is_available():
                 real_label=real_label.cuda()
                 z=z.cuda()
             fake_f=self.G(z)
-            output=self.D(fake_f)#fake score, close to 1 means better
+            output=self.D(fake_f)#fake score, close to 0 means better
             svm_edge_loss=0
             for feature in fake_f:
                 svm_edge_loss+=self.decision_distance(svm,feature)
@@ -187,7 +174,8 @@ class GANmodel():
             g_loss.backward()
             self.g_optimizer.step()
             
-            print("Epoch[{}/{}], g_loss:{:.6f}, D fake:{:.6f}".format(epoch,self.iter_num_epoch,g_loss.item(),output.data.mean()))
+            if (epoch+1)%50==0:
+                print("Epoch[{}/{}], g_loss:{:.6f}, D fake:{:.6f}".format(epoch,self.iter_num_epoch,g_loss.item(),output.data.mean()))
         writer.close()
         return 0
 
@@ -199,31 +187,6 @@ class GANmodel():
         fake_f=self.G(z)
         fake_f_np=fake_f.detach().numpy()
         np.savetxt(g_path,fake_f_np,delimiter="\t")
-        return 0
-
-    def generate_balance(self,svm,g_num,dis_filter):
-        dissum=0
-        if self.meanflag==0:
-            for feature in self.dataset.train_features:
-                dissum+=abs((self.decision_distance(svm,feature)).detach().numpy())
-            self.dismean=dissum/len(self.dataset.train_features)
-        self.meanflag=1
-        mindis=dis_filter*self.dismean
-        z=torch.randn(int(50*g_num),self.G.z_dimension)
-        if torch.cuda.is_available():
-            z=z.cuda()
-        fake_f=self.G(z).detach().numpy()
-        deletelist=[]
-        for i in range(len(fake_f)):
-            if abs((self.decision_distance(svm,torch.tensor(fake_f[i]))).detach().numpy())<mindis:
-                deletelist.append(i)
-        fake_f=np.delete(fake_f,deletelist,axis=0)
-        li=range(len(fake_f))
-        chli=np.random.choice(li,int(g_num),replace=False)
-        fake_f=fake_f[chli]
-        label=svm.predict(fake_f).reshape(-1,1)
-        fake_f=np.hstack((fake_f,label))
-        save_in_train_all(fake_f,0)
         return 0
 
     def save(self):

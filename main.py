@@ -5,6 +5,109 @@ from matplotlib import pyplot as plt
 from sklearn.mixture import BayesianGaussianMixture
 from sklearn.mixture import GaussianMixture
 import os,sys
+import pickle
+
+def decision_distance(svm,x):
+        w=svm.coef_
+        b=svm.intercept_
+        dis=abs(sum(np.matmul(w,x))+b)
+        dis=dis/np.linalg.norm(w)
+        return dis
+
+def showpic(feature):
+    weights=feature[:3]
+    means=feature[3:6]
+    covs=feature[6:9]
+    img=toimage(weights,means,covs)
+    cv2.imshow("generated",img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    return 0
+
+def save_in_train_all(dat,mode):
+    if mode==1:
+        np.savetxt("data/train/generated.txt",dat)
+        gen_str=pickle.dumps(dat)
+        num=len(os.listdir("data/all/generated"))
+        f=open("data/all/generated/"+str(num)+".txt","wb")
+        f.write(gen_str)
+        f.close()
+    if mode==0:
+        np.savetxt("data/train/balancing.txt",dat)
+        gen_str=pickle.dumps(dat)
+        num=len(os.listdir("data/all/balancing"))
+        f=open("data/all/balancing/"+str(num)+".txt","wb")
+        f.write(gen_str)
+        f.close()
+    return 0
+
+def generate_balance(ufeature_sc,svm,dismean,g_num,dis_filter,scaler):
+    mindis=dis_filter*dismean
+    deletelist=[]
+    for i in range(len(ufeature_sc)):
+        #print(self.decision_distance(svm,torch.tensor(ufeature_sc[i])))
+        if (decision_distance(svm,ufeature_sc[i]))<mindis:
+            deletelist.append(i)
+    chosenf=np.delete(ufeature_sc,deletelist,axis=0)
+    li=range(len(chosenf))
+    chli=np.random.choice(li,int(g_num),replace=False)
+    chosenf=chosenf[chli]
+    bfsc_chosen_f=scaler.inverse_transform(chosenf)
+    label=svm.predict(chosenf).reshape(-1,1)
+    chosenf=np.hstack((chosenf,label))
+    for feature in bfsc_chosen_f:
+        for i in range(len(feature)):
+            if i>5 and feature[i]<0:
+                feature[i-6]=1
+                feature[i]=1000
+                continue
+            if feature[i]<0:
+                feature[i]=0
+        showpic(feature)
+    save_in_train_all(chosenf,0)
+    return 0
+
+#add residual feature
+def train_svm(svm,traindatab,traindatag):
+    if type(traindatab)==type(None):
+        labeleddata=traindatag
+    else:
+        labeleddata=np.vstack((traindatab,traindatag))
+    feature_sc=labeleddata[:,:-1]
+    label=labeleddata[:,-1]
+    svm.partial_fit(feature_sc,label,classes=[0,1])
+    """pred=svm.predict(feature_sc)
+    truelabel=pred==label
+    for i in range(len(truelabel)):
+        if truelabel[i]==0:
+            print("picture",i//5,"column",i%5)"""
+    testf=traindatag[:,:-1]
+    testl=traindatag[:,-1]
+    print("the latest train dataset score",svm.score(testf,testl))
+    return 0
+
+def expert_label(g_num,feature_num,scaler):
+    path="data/expert/generated.txt"
+    generated=np.loadtxt(path,delimiter="\t")
+    trainadd=np.zeros((g_num,feature_num+1))
+    trainadd[:,:feature_num]=generated
+    generated=scaler.inverse_transform(generated)
+    j=0
+    for feature in generated:
+        for i in range(len(feature)):
+            if i>5 and feature[i]<0:
+                feature[i-6]=1
+                feature[i]=1000
+                continue
+            if feature[i]<0:
+                feature[i]=0
+        showpic(feature)
+        ans=input("please enter answer:(1 for abnormal, 0 for normal)")
+        trainadd[j,-1]=ans
+        j+=1
+    save_in_train_all(trainadd,1)
+    return 0
+
 def mean(a,b):
     return (a+b)/2
 
