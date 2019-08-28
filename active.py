@@ -25,7 +25,8 @@ testlabel=np.loadtxt(testlabelpath,delimiter="\t")
 
 #compute the cov matrix
 np.set_printoptions(precision=3)
-print(np.cov(feature,rowvar=False))
+plt.imshow(np.cov(feature,rowvar=False))
+plt.show()
 
 #scaling
 scaler=StandardScaler()
