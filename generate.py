@@ -73,7 +73,7 @@ class GANmodel():
         self.batch_size = 10
         self.init_num_epoch = 500
         self.iter_num_epoch = 250
-        self.k=20
+        self.k=10
         self.G=generator()
         self.D=discriminator()
         if torch.cuda.is_available():
@@ -179,14 +179,27 @@ class GANmodel():
         writer.close()
         return 0
 
-    def generate(self,g_num):
+    def generate(self,g_num,scaler):#filter the generated data with cov less than 0
         g_path="data/expert/generated.txt"
-        z=torch.randn(g_num,self.G.z_dimension)
+        z=torch.randn(1000,self.G.z_dimension)
         if torch.cuda.is_available():
             z=z.cuda()
         fake_f=self.G(z)
         fake_f_np=fake_f.detach().numpy()
-        np.savetxt(g_path,fake_f_np,delimiter="\t")
+        bfsc_fake_f=scaler.inverse_transform(fake_f_np)
+        j=0
+        deletelist=[]
+        for feature in bfsc_fake_f:
+            for i in range(len(feature)):
+                if i>5 and feature[i]<0:#cov less than 0
+                    deletelist.append(j)
+                    break
+            j+=1
+        fake_f_np=np.delete(fake_f_np,deletelist,axis=0)
+        li=range(len(fake_f_np))
+        chli=np.random.choice(li,int(g_num),replace=False)
+        chosenf=fake_f_np[chli]
+        np.savetxt(g_path,chosenf,delimiter="\t")
         return 0
 
     def save(self):

@@ -64,6 +64,7 @@ def generate_balance(ufeature_sc,svm,dismean,g_num,dis_filter,scaler):
             if feature[i]<0:
                 feature[i]=0
         showpic(feature)
+
     save_in_train_all(chosenf,0)
     return 0
 
@@ -86,7 +87,7 @@ def train_svm(svm,traindatab,traindatag):
     print("the latest train dataset score",svm.score(testf,testl))
     return 0
 
-def expert_label(g_num,feature_num,scaler):
+def expert_label(g_num,feature_num,scaler):#为什么一直会生成负的cov啊啊啊啊啊啊！！！
     path="data/expert/generated.txt"
     generated=np.loadtxt(path,delimiter="\t")
     trainadd=np.zeros((g_num,feature_num+1))
@@ -95,11 +96,7 @@ def expert_label(g_num,feature_num,scaler):
     j=0
     for feature in generated:
         for i in range(len(feature)):
-            if i>5 and feature[i]<0:
-                feature[i-6]=1
-                feature[i]=1000
-                continue
-            if feature[i]<0:
+            if i<3 and feature[i]<0:
                 feature[i]=0
         showpic(feature)
         ans=input("please enter answer:(1 for abnormal, 0 for normal)")

@@ -23,6 +23,10 @@ ufeature=np.loadtxt(unlabeledpath,delimiter="\t")
 testfeature=np.loadtxt(testfeaturepath,delimiter="\t")
 testlabel=np.loadtxt(testlabelpath,delimiter="\t")
 
+#compute the cov matrix
+np.set_printoptions(precision=3)
+print(np.cov(feature,rowvar=False))
+
 #scaling
 scaler=StandardScaler()
 ufeature_sc=scaler.fit_transform(ufeature)#using large unlabeled data to normalize
@@ -52,7 +56,7 @@ balancing_ratio=0.5
 iter_num=10
 for i in range(iter_num):
     gan1.G_train(svm)
-    gan1.generate(expert_batch_num)#put data in generated.txt in expert folder
+    gan1.generate(expert_batch_num,scaler)#put data in generated.txt in expert folder
     main.generate_balance(ufeature_sc,svm,dismean,expert_batch_num*balancing_ratio,1,scaler)#put data in balancing.txt
     main.expert_label(expert_batch_num,(labeleddata.shape[1]-1),scaler)#put data in generated.txt
     traindatab=np.loadtxt("data/train/balancing.txt")
