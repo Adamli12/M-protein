@@ -24,9 +24,9 @@ testfeature=np.loadtxt(testfeaturepath,delimiter="\t")
 testlabel=np.loadtxt(testlabelpath,delimiter="\t")
 
 #compute the cov matrix
-np.set_printoptions(precision=3)
+"""np.set_printoptions(precision=3)
 plt.imshow(np.cov(feature,rowvar=False))
-plt.show()
+plt.show()"""
 
 #scaling
 scaler=StandardScaler()
@@ -36,10 +36,10 @@ testfeature_sc=scaler.transform(testfeature)
 
 
 #preparing
-label=np.reshape(label,(60,1))
+label=np.reshape(label,(-1,1))
 labeleddata=np.hstack((feature_sc,label))
 main.save_in_train_all(labeleddata,0)
-svm=SGDClassifier()
+svm=SGDClassifier(max_iter=2500)
 
 #begin training process step1
 traindata=np.loadtxt("data/train/balancing.txt")

@@ -179,6 +179,7 @@ def tosample(dense):
 
 def todensity(img):
     wi=img.shape[1]
+    img=cv2.resize(img,(wi,300))
     img = cv2.fastNlMeansDenoising(img,None,20,7,21)
     #plt.imshow(img,cmap="gray")
     #plt.show()
@@ -263,12 +264,16 @@ def BGMreport(path,visualize=1,cut_n=6):
         BGM=BayesianGaussianMixture(n_components=n_components,covariance_type='spherical',weight_concentration_prior=0.000000000001,max_iter=500)
         BGM.fit(samples[i])
         means=np.reshape(BGM.means_,(-1,))
+        permu=np.argsort(means)
+        means=means[permu]
         BGM45[i*9+3:i*9+6]=means
         allmeans.append(means)
         covs=BGM.covariances_
+        covs=covs[permu]
         BGM45[i*9+6:i*9+9]=covs
         allcovs.append(covs)
         weights=BGM.weights_
+        weights=weights[permu]
         BGM45[i*9:i*9+3]=weights*len(samples[i])
         allweights.append(weights)
     if visualize==1:
@@ -449,6 +454,24 @@ def folder_to_data(path,pre,cut_n=6):
     np.savetxt(pre+"label.csv",label,delimiter="\t",fmt="%d")
     return 0
 
+def folder_to_vae_data(path,pre,cut_n=6):
+    i=0
+    train=np.zeros((len(os.listdir(path)*5),300))
+    label=np.zeros((len(os.listdir(path)*5)))
+    for img in os.listdir(path):
+        path1=os.path.join(path,img)
+        ans=finddensefromcut(path1,cut_n)[0]
+        ans1=BGMreport(path1,0,cut_n)
+        for j in range(5):
+            train[i*5+j]=ans[j]
+            label[i*5+j]=ans1[0][7+j]
+        i+=1
+        if i%20==0:
+            print(i)
+    np.savetxt(pre+"train.csv",train,delimiter="\t",fmt="%.4f")
+    np.savetxt(pre+"label.csv",label,delimiter="\t",fmt="%d")
+    return 0
+
 def generate_pics(pathgk,pathno,num):
     for i in range(num):
         G=toimage(np.array(weight_generator())*sample_generator(),mean_generator(),cov_generatorgk())
@@ -492,9 +515,11 @@ generate_pics("generate_gkpics","generate_nopics",100)
 folder_to_data("generate_gkpics","gk",5,)
 folder_to_data("generate_nopics","no",5)
 print(read_label("nolabels.csv",[0,0,0,0,0]))
+"""
 
-folder_to_data("pics/trainpics","t",6)
+folder_to_vae_data("pics/trainpics","vae",6)
 
+"""
 ans=BGMreport("pics/trainpics/b.jpg",1,cut_n=6)
 print(ans[0])
 #print(ans[1])
