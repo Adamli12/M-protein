@@ -45,41 +45,4 @@
   year        = {2009},
 }
 
-@InProceedings{goodfellow2014generative,
-  author    = {Goodfellow, Ian and Pouget-Abadie, Jean and Mirza, Mehdi and Xu, Bing and Warde-Farley, David and Ozair, Sherjil and Courville, Aaron and Bengio, Yoshua},
-  title     = {Generative adversarial nets},
-  booktitle = {Advances in neural information processing systems},
-  year      = {2014},
-  pages     = {2672--2680},
-}
-
-@Article{kingma2013auto,
-  author  = {Kingma, Diederik P and Welling, Max},
-  title   = {Auto-encoding variational bayes},
-  journal = {arXiv preprint arXiv:1312.6114},
-  year    = {2013},
-}
-
-@Article{tanner1987calculation,
-  author    = {Tanner, Martin A and Wong, Wing Hung},
-  title     = {The calculation of posterior distributions by data augmentation},
-  journal   = {Journal of the American statistical Association},
-  year      = {1987},
-  volume    = {82},
-  number    = {398},
-  pages     = {528--540},
-  publisher = {Taylor \& Francis},
-}
-
-@Article{pan2009survey,
-  author    = {Pan, Sinno Jialin and Yang, Qiang},
-  title     = {A survey on transfer learning},
-  journal   = {IEEE Transactions on knowledge and data engineering},
-  year      = {2009},
-  volume    = {22},
-  number    = {10},
-  pages     = {1345--1359},
-  publisher = {IEEE},
-}
-
 @Comment{jabref-meta: databaseType:bibtex;}
