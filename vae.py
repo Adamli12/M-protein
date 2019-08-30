@@ -11,6 +11,7 @@ import numpy as np
 from sklearn.linear_model import SGDClassifier
 from sklearn.svm import SVC
 from sklearn.preprocessing import MinMaxScaler
+import cv2
 
 parser = argparse.ArgumentParser(description='VAE MNIST Example')
 parser.add_argument('--batch-size', type=int, default=4, metavar='N',
@@ -125,7 +126,7 @@ class VAEmodel():
             print('====> Epoch: {} Average loss: {:.4f}'.format(
                 epoch, train_loss / len(self.dataloader.dataset)))
 
-    def svmtest(self,testdata,testlabel,svm):
+    def svmtest(self,testdata,testlabel,svm,scaler):
         self.module.eval()
         with torch.no_grad():
             td=torch.tensor(testdata,dtype=torch.float32).to(device)
@@ -134,6 +135,18 @@ class VAEmodel():
         svm.partial_fit(svmdat,testlabel,classes=[0,1])
         #svm.fit(svmdat,testlabel)
         print("the latest train dataset score",svm.score(svmdat,testlabel))
+        for i in range(5):
+            dat=np.reshape(np.array(scaler.inverse_transform(testdata[i*5].reshape(1,-1)),dtype=np.uint8),(-1,1))
+            rec=np.reshape(np.array(scaler.inverse_transform(recon_batch[i*5].reshape(1,-1)),dtype=np.uint8),(-1,1))
+            dimg=np.tile(dat,50,)
+            drec=np.tile(rec,50)
+            cv2.imshow("origin",dimg)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
+            cv2.imshow("reconstructed",drec)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
+
     
 
 """def test(epoch):
@@ -177,7 +190,7 @@ if __name__ == "__main__":
     vamo=VAEmodel(ufeature_sc,args)
     vamo.train()
     print()
-    vamo.svmtest(testfeature_sc,testlabel,svm)
+    vamo.svmtest(testfeature_sc,testlabel,svm,scaler)
         
     #test(epoch)
     """

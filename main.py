@@ -463,7 +463,7 @@ def folder_to_vae_data(path,pre,cut_n=6):
         ans=finddensefromcut(path1,cut_n)[0]
         ans1=BGMreport(path1,0,cut_n)
         for j in range(5):
-            train[i*5+j]=ans[j]
+            train[i*5+j]=ans[j+1]
             label[i*5+j]=ans1[0][7+j]
         i+=1
         if i%20==0:
@@ -518,6 +518,7 @@ print(read_label("nolabels.csv",[0,0,0,0,0]))
 """
 if __name__ == "__main__":
     folder_to_vae_data("pics/trainpics","vae",6)
+    folder_to_data("pics/trainpics","t",6)
 
 """
 ans=BGMreport("pics/trainpics/b.jpg",1,cut_n=6)
