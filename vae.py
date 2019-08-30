@@ -9,13 +9,14 @@ from torchvision import datasets, transforms
 from torchvision.utils import save_image
 import numpy as np
 from sklearn.linear_model import SGDClassifier
-from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
+from sklearn.preprocessing import MinMaxScaler
 
 parser = argparse.ArgumentParser(description='VAE MNIST Example')
 parser.add_argument('--batch-size', type=int, default=4, metavar='N',
                     help='input batch size for training (default: 4)')
-parser.add_argument('--epochs', type=int, default=10, metavar='N',
-                    help='number of epochs to train (default: 10)')
+parser.add_argument('--epochs', type=int, default=100, metavar='N',
+                    help='number of epochs to train (default: 100)')
 parser.add_argument('--no-cuda', action='store_true', default=False,
                     help='enables CUDA training')
 parser.add_argument('--seed', type=int, default=1, metavar='S',
@@ -131,6 +132,7 @@ class VAEmodel():
             recon_batch, mu, logvar = self.module(td)
         svmdat=mu.view(len(testdata),9).detach().numpy()
         svm.partial_fit(svmdat,testlabel,classes=[0,1])
+        #svm.fit(svmdat,testlabel)
         print("the latest train dataset score",svm.score(svmdat,testlabel))
     
 
@@ -164,15 +166,17 @@ if __name__ == "__main__":
     testfeature=np.loadtxt(testfeaturepath,delimiter="\t")
     testlabel=np.loadtxt(testlabelpath,delimiter="\t")
 
-    scaler=StandardScaler()
+    scaler=MinMaxScaler()
     ufeature_sc=scaler.fit_transform(ufeature)#using large unlabeled data to normalize
     feature_sc=scaler.transform(feature)
     testfeature_sc=scaler.transform(testfeature)
 
-    svm=SGDClassifier(max_iter=2500)
+    svm=SGDClassifier(max_iter=1000)
+    #svm=SVC(kernel="linear")
 
     vamo=VAEmodel(ufeature_sc,args)
     vamo.train()
+    print()
     vamo.svmtest(testfeature_sc,testlabel,svm)
         
     #test(epoch)

@@ -516,8 +516,8 @@ folder_to_data("generate_gkpics","gk",5,)
 folder_to_data("generate_nopics","no",5)
 print(read_label("nolabels.csv",[0,0,0,0,0]))
 """
-
-folder_to_vae_data("pics/trainpics","vae",6)
+if __name__ == "__main__":
+    folder_to_vae_data("pics/trainpics","vae",6)
 
 """
 ans=BGMreport("pics/trainpics/b.jpg",1,cut_n=6)

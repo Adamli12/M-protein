@@ -39,7 +39,7 @@ testfeature_sc=scaler.transform(testfeature)
 label=np.reshape(label,(-1,1))
 labeleddata=np.hstack((feature_sc,label))
 main.save_in_train_all(labeleddata,0)
-svm=SGDClassifier(max_iter=2500)
+svm=SGDClassifier(max_iter=5000)
 
 #begin training process step1
 traindata=np.loadtxt("data/train/balancing.txt")
