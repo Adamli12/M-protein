@@ -1,5 +1,12 @@
 \begin{thebibliography}{}
 
+\bibitem[\protect\citeauthoryear{Arjovsky, Chintala, and
+  Bottou}{2017}]{arjovsky2017wasserstein}
+Arjovsky, M.; Chintala, S.; and Bottou, L.
+\newblock 2017.
+\newblock Wasserstein gan.
+\newblock {\em arXiv preprint arXiv:1701.07875}.
+
 \bibitem[\protect\citeauthoryear{Buhrmester, Kwang, and
   Gosling}{2011}]{buhrmester2011amazon}
 Buhrmester, M.; Kwang, T.; and Gosling, S.~D.
@@ -7,6 +14,12 @@ Buhrmester, M.; Kwang, T.; and Gosling, S.~D.
 \newblock Amazon's mechanical turk: A new source of inexpensive, yet
   high-quality, data?
 \newblock {\em Perspectives on psychological science} 6(1):3--5.
+
+\bibitem[\protect\citeauthoryear{Donahue, Krähenbühl, and
+  Darrell}{2016}]{donahue2016adversarial}
+Donahue, J.; Krähenbühl, P.; and Darrell, T.
+\newblock 2016.
+\newblock Adversarial feature learning.
 
 \bibitem[\protect\citeauthoryear{Goodfellow \bgroup et al\mbox.\egroup
   }{2014}]{goodfellow2014generative}
@@ -22,6 +35,18 @@ Kingma, D.~P., and Welling, M.
 \newblock 2013.
 \newblock Auto-encoding variational bayes.
 \newblock {\em arXiv preprint arXiv:1312.6114}.
+
+\bibitem[\protect\citeauthoryear{Larsen \bgroup et al\mbox.\egroup
+  }{2015}]{larsen2015autoencoding}
+Larsen, A. B.~L.; Sønderby, S.~K.; Larochelle, H.; and Winther, O.
+\newblock 2015.
+\newblock Autoencoding beyond pixels using a learned similarity metric.
+
+\bibitem[\protect\citeauthoryear{Mirza and
+  Osindero}{2014}]{mirza2014conditional}
+Mirza, M., and Osindero, S.
+\newblock 2014.
+\newblock Conditional generative adversarial nets.
 
 \bibitem[\protect\citeauthoryear{Pan and Yang}{2009}]{pan2009survey}
 Pan, S.~J., and Yang, Q.
