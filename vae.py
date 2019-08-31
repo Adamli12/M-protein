@@ -16,13 +16,13 @@ import cv2
 parser = argparse.ArgumentParser(description='VAE MNIST Example')
 parser.add_argument('--batch-size', type=int, default=4, metavar='N',
                     help='input batch size for training (default: 4)')
-parser.add_argument('--epochs', type=int, default=100, metavar='N',
-                    help='number of epochs to train (default: 100)')
+parser.add_argument('--epochs', type=int, default=500, metavar='N',
+                    help='number of epochs to train (default: 500)')
 parser.add_argument('--no-cuda', action='store_true', default=False,
                     help='enables CUDA training')
 parser.add_argument('--seed', type=int, default=1, metavar='S',
                     help='random seed (default: 1)')
-parser.add_argument('--log-interval', type=int, default=5, metavar='N',
+parser.add_argument('--log-interval', type=int, default=20, metavar='N',
                     help='how many batches to wait before logging training status')
 args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
@@ -184,7 +184,7 @@ if __name__ == "__main__":
     feature_sc=scaler.transform(feature)
     testfeature_sc=scaler.transform(testfeature)
 
-    svm=SGDClassifier(max_iter=1000)
+    svm=SGDClassifier(max_iter=10000)
     #svm=SVC(kernel="linear")
 
     vamo=VAEmodel(ufeature_sc,args)

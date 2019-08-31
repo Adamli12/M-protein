@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/W32TeX) (preloaded format=pdflatex 2019.8.24)  29 AUG 2019 14:51
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/W32TeX) (preloaded format=pdflatex 2019.8.24)  30 AUG 2019 20:59
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -136,16 +136,6 @@ LaTeX Font Info:    Font shape `OMS/ptm/m/n' in size <9> not available
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <10> not available
 (Font)              Font shape `OT1/ptm/b/n' tried instead on input line 65.
 
-Underfull \hbox (badness 3590) in paragraph at lines 73--74
-[]\OT1/ptm/m/n/10 M-protain stands for Myeloma pro-tein, which can
- []
-
-
-Underfull \hbox (badness 1789) in paragraph at lines 73--74
-\OT1/ptm/m/n/10 ages be-cause of its sharp mon-o-clonal band. Dif-fer-ent
- []
-
-
 Underfull \hbox (badness 3954) in paragraph at lines 81--82
 \OT1/ptm/m/n/10 Multiple tech-niques were used to tackle with small
  []
@@ -155,14 +145,16 @@ Underfull \hbox (badness 1701) in paragraph at lines 81--82
 \OT1/ptm/m/n/10 datasets and par-tially la-beled datasets in-clud-ing ac-tive
  []
 
-(c:/Users/Rah/Documents/summer/M-protain/report/ARTICLE/M-protain diagnostics using generative active learning.bbl
+(c:/Users/Rah/Documents/summer/M-protain/report/ARTICLE/M-protain diagnostics using generative active learning.bbl [1{c:/texlive/2019/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
+
+
+
+]
 Underfull \hbox (badness 1354) in paragraph at lines 13--19
 []\OT1/ptm/m/n/10 Goodfellow, I.; Pouget-Abadie, J.; Mirza, M.; Xu, B.;
  []
 
-) [1{c:/texlive/2019/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
-
-
+) [2
 
 ] (c:/Users/Rah/Documents/summer/M-protain/report/ARTICLE/M-protain diagnostics using generative active learning.aux) ) 
 Here is how much of TeX's memory you used:
@@ -172,12 +164,12 @@ Here is how much of TeX's memory you used:
  5509 multiletter control sequences out of 15000+600000
  14641 words of font info for 29 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 41i,10n,25p,1003b,240s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 41i,10n,25p,1140b,240s stack positions out of 5000i,500n,10000p,200000b,80000s
 {c:/texlive/2019/texmf-dist/fonts/enc/dvips/base/8r.enc}<c:/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb><c:/texlive/2019/texmf-dist/fonts/type1/urw/times/utmb8a.pfb><c:/texlive/2019/texmf-dist/fonts/type1/urw/times/utmr8a.pfb><c:/texlive/2019/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on "c:/Users/Rah/Documents/summer/M-protain/report/ARTICLE/M-protain diagnostics using generative active learning.pdf" (1 page, 55341 bytes).
+Output written on "c:/Users/Rah/Documents/summer/M-protain/report/ARTICLE/M-protain diagnostics using generative active learning.pdf" (2 pages, 56839 bytes).
 PDF statistics:
- 25 PDF objects out of 1000 (max. 8388607)
- 17 compressed objects within 1 object stream
+ 28 PDF objects out of 1000 (max. 8388607)
+ 19 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
