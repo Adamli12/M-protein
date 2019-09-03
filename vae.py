@@ -13,7 +13,7 @@ from sklearn.svm import SVC
 from sklearn.preprocessing import MinMaxScaler
 import cv2
 
-parser = argparse.ArgumentParser(description='VAE MNIST Example')
+parser = argparse.ArgumentParser(description='VAE M-protain')
 parser.add_argument('--batch-size', type=int, default=4, metavar='N',
                     help='input batch size for training (default: 4)')
 parser.add_argument('--epochs', type=int, default=500, metavar='N',
@@ -138,7 +138,7 @@ class VAEmodel():
         for i in range(5):
             dat=np.reshape(np.array(scaler.inverse_transform(testdata[i*5].reshape(1,-1)),dtype=np.uint8),(-1,1))
             rec=np.reshape(np.array(scaler.inverse_transform(recon_batch[i*5].reshape(1,-1)),dtype=np.uint8),(-1,1))
-            dimg=np.tile(dat,50,)
+            dimg=np.tile(dat,50)
             drec=np.tile(rec,50)
             cv2.imshow("origin",dimg)
             cv2.waitKey(0)

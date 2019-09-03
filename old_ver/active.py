@@ -38,7 +38,7 @@ testfeature_sc=scaler.transform(testfeature)
 #preparing
 label=np.reshape(label,(-1,1))
 labeleddata=np.hstack((feature_sc,label))
-main.save_in_train_all(labeleddata,0)
+main.save_in_train_all(labeleddata,0,"data")
 svm=SGDClassifier(max_iter=10000)
 
 #begin training process step1
