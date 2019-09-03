@@ -24,19 +24,19 @@ def showpic(feature):
     cv2.destroyAllWindows()
     return 0
 
-def save_in_train_all(dat,mode):
+def save_in_train_all(dat,mode,folderpath):
     if mode==1:
-        np.savetxt("data/train/generated.txt",dat)
+        np.savetxt(os.path.join(folderpath,"train/generated.txt"),dat)
         gen_str=pickle.dumps(dat)
-        num=len(os.listdir("data/all/generated"))
-        f=open("data/all/generated/"+str(num)+".txt","wb")
+        num=len(os.listdir(os.path.join(folderpath,"all/generated")))
+        f=open(os.path.join(folderpath,"all/generated/")+str(num)+".txt","wb")
         f.write(gen_str)
         f.close()
     if mode==0:
-        np.savetxt("data/train/balancing.txt",dat)
+        np.savetxt(os.path.join(folderpath,"train/balancing.txt"),dat)
         gen_str=pickle.dumps(dat)
-        num=len(os.listdir("data/all/balancing"))
-        f=open("data/all/balancing/"+str(num)+".txt","wb")
+        num=len(os.listdir(os.path.join(folderpath,"all/balancing")))
+        f=open(os.path.join(folderpath,"all/balancing/")+str(num)+".txt","wb")
         f.write(gen_str)
         f.close()
     return 0
@@ -491,6 +491,54 @@ def generate_pics(pathgk,pathno,num):
         img=showgeneratedimg([G,A,M,K,L])
         cv2.imwrite(pathno+"/"+str(i)+".jpg",img)
     return 0
+
+def nactive(folderpath):
+    #data path
+    featurepath=os.path.join(folderpath,"feature.csv")
+    labelpath=os.path.join(folderpath,"label.csv")
+    feature=np.loadtxt(featurepath,delimiter="\t")
+    label=np.loadtxt(labelpath,delimiter="\t")
+
+    #compute the cov matrix
+    """np.set_printoptions(precision=3)
+    plt.imshow(np.cov(feature,rowvar=False))
+    plt.show()"""
+
+    #scaling
+    scaler=StandardScaler()
+    feature_sc=scaler.fit_transform(feature)#using large unlabeled data to normalize
+
+    #preparing
+    label=np.reshape(label,(-1,1))
+    labeleddata=np.hstack((feature_sc,label))
+    save_in_train_all(labeleddata,0,folderpath)
+    svm=SGDClassifier(max_iter=10000)
+
+    #begin training process step1
+    traindata=np.loadtxt("data/train/balancing.txt")
+    train_svm(svm,None,traindata)
+    """dissum=0
+    for feature in ufeature_sc:
+        dissum+=(main.decision_distance(svm,feature))
+    dismean=dissum/len(ufeature_sc)"""
+    samp=sample.SampModel(folderpath)
+
+    #begin training process step2
+    expert_batch_num=10
+    balancing_ratio=0.5
+    iter_num=10
+    for i in range(iter_num):
+        samp.sample(svm,expert_batch_num)#put data in generated.txt in expert folder
+        main.generate_balance(ufeature_sc,svm,dismean,expert_batch_num*balancing_ratio,1,scaler)#put data in balancing.txt
+        main.expert_label(expert_batch_num,(labeleddata.shape[1]-1),scaler)#put data in generated.txt
+        traindatab=np.loadtxt("data/train/balancing.txt")
+        traindatag=np.loadtxt("data/train/generated.txt")
+        main.train_svm(svm,traindatab,traindatag)
+
+    #test
+    pred=svm.predict(scaler.transform(feature_sc))
+    print("test score:",svm.score(testfeature_sc,testlabel))
+    return svm
 
 gt=[[1,1,0,0,0,0,0,1,0,0,1,0],
 [1,0,0,1,0,0,0,0,1,0,1,0],
