@@ -85,7 +85,7 @@ class VAE(nn.Module):
 # Reconstruction + KL divergence losses summed over all elements and batch
 
 class VAEmodel():
-    def __init__(self, dat,args):
+    def __init__(self, dat, args):
         self.dataset = Mvaedataset(dat)
         self.batch_size = args.batch_size
         self.dataloader = data.DataLoader(dataset=self.dataset, batch_size = self.batch_size, shuffle = True)

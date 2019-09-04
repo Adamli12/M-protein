@@ -125,7 +125,12 @@ def active(folderpath, Gmodel):
             _, mu, _= Gmo.module(feature_sc)
         svmfeature = mu
     elif Gmodel == "gmm":
-        pass
+        Gmo = GMMmodel(visualization=0)
+        svmfeature = Gmo.module.encode(feature)
+        ans = Gmo.module.rule_classication(svmfeature)
+        print([label[i] == ans[i] for i in range(len(label))])
+        acc = sum([label[i] == ans[i] for i in range(len(label))])/ans.shape[0]
+        print("rule based acc: ", acc)
     elif Gmodel == "bigan":
         pass
 
@@ -145,7 +150,7 @@ def active(folderpath, Gmodel):
     svm = SGDClassifier(max_iter = 10000)
 
     #begin training process step1
-    traindata = np.loadtxt(os.path.join(folderpath, Gmodel) + "train/balancing.txt")
+    traindata = np.loadtxt(os.path.join(folderpath, Gmodel) + "/train/balancing.txt")
     train_svm(svm,None,traindata)
     """dissum=0
     for feature in ufeature_sc:
@@ -168,4 +173,4 @@ def active(folderpath, Gmodel):
     print("train score:",svm.score(feature_sc,label))
     return svm
 
-active("data", "vae")
+active("data", "gmm")
