@@ -7,6 +7,26 @@ from sklearn.mixture import GaussianMixture
 import os,sys
 import pickle
 
+def recon_error(testdata,recon_batch):
+    average_error=0
+    for i in range(len(testdata)):
+        dat=np.reshape(np.array(testdata[i].reshape(1,-1),dtype=np.uint8),(-1,1))
+        rec=np.reshape(np.array(recon_batch[i].reshape(1,-1),dtype=np.uint8),(-1,1))
+        er=np.array(rec,dtype=np.float32)-np.array(dat,dtype=np.float32)
+        average_error+=sum(abs(er))/len(dat)
+        if i%10==0:
+            dimg=np.tile(dat,50)
+            drec=np.tile(rec,50)
+            cv2.imshow("origin",dimg)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
+            cv2.imshow("reconstructed",drec)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
+    average_error=average_error/len(testdata)
+    print("average reconstruction error",average_error)
+    return average_error
+
 def decision_distance(svm,x):
         w=svm.coef_
         b=svm.intercept_

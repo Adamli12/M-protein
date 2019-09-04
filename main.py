@@ -75,8 +75,8 @@ def train_svm(svm,traindatab,traindatag):
     for i in range(len(truelabel)):
         if truelabel[i]==0:
             print("picture",i//5,"column",i%5)"""
-    testf=traindatag[:,:-1]
-    testl=traindatag[:,-1]
+    testf=feature_sc
+    testl=label
     print("the latest train dataset score",svm.score(testf,testl))
     return 0
 
@@ -127,8 +127,10 @@ def active(folderpath, Gmodel):
     elif Gmodel == "gmm":
         Gmo = GMMmodel(visualization=0)
         svmfeature = Gmo.module.encode(feature)
+        recon=Gmo.module.decode(svmfeature)
+        utils.recon_error(feature,recon)
         ans = Gmo.module.rule_classication(svmfeature)
-        print([label[i] == ans[i] for i in range(len(label))])
+        #print([label[i] == ans[i] for i in range(len(label))])
         acc = sum([label[i] == ans[i] for i in range(len(label))])/ans.shape[0]
         print("rule based acc: ", acc)
     elif Gmodel == "bigan":
@@ -151,6 +153,25 @@ def active(folderpath, Gmodel):
 
     #begin training process step1
     traindata = np.loadtxt(os.path.join(folderpath, Gmodel) + "/train/balancing.txt")
+
+    feature_sc=traindata[:,:-1]
+    label=traindata[:,-1]
+    svm.partial_fit(feature_sc,label,classes=[0,1])
+    print("coef", svm.coef_)
+    pred=svm.predict(feature_sc)
+    truelabel=pred==label
+    for i in range(len(truelabel)):
+        if truelabel[i]==0:
+            print("data(from 0)",i,feature_sc[i])
+            fea=svmscaler.inverse_transform(feature_sc[i])
+            image=utils.toimage(fea[0:3],fea[3:6],fea[6:9])
+            cv2.imshow("generated",image)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
+    testf=feature_sc
+    testl=label
+    print("the latest train dataset score",svm.score(testf,testl))
+
     train_svm(svm,None,traindata)
     """dissum=0
     for feature in ufeature_sc:

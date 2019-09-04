@@ -12,18 +12,21 @@ from sklearn.linear_model import SGDClassifier
 from sklearn.svm import SVC
 from sklearn.preprocessing import MinMaxScaler
 import cv2
+import utils
 
 parser = argparse.ArgumentParser(description='VAE M-protain')
 parser.add_argument('--batch-size', type=int, default=4, metavar='N',
                     help='input batch size for training (default: 4)')
-parser.add_argument('--epochs', type=int, default=500, metavar='N',
-                    help='number of epochs to train (default: 500)')
+parser.add_argument('--epochs', type=int, default=300, metavar='N',
+                    help='number of epochs to train (default: 300)')
 parser.add_argument('--no-cuda', action='store_true', default=False,
                     help='enables CUDA training')
 parser.add_argument('--seed', type=int, default=1, metavar='S',
                     help='random seed (default: 1)')
 parser.add_argument('--log-interval', type=int, default=20, metavar='N',
                     help='how many batches to wait before logging training status')
+parser.add_argument('--latent-variable-num', type=int, default=50, metavar='N',
+                    help='how many latent variables')
 args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
 
@@ -56,12 +59,12 @@ class Mvaedataset(data.Dataset):
 
 
 class VAE(nn.Module):
-    def __init__(self):
+    def __init__(self,ln):
         super(VAE, self).__init__()
         self.fc1 = nn.Linear(300, 150)
-        self.fc21 = nn.Linear(150, 9)
-        self.fc22 = nn.Linear(150, 9)
-        self.fc3 = nn.Linear(9, 150)
+        self.fc21 = nn.Linear(150, ln)
+        self.fc22 = nn.Linear(150, ln)
+        self.fc3 = nn.Linear(ln, 150)
         self.fc4 = nn.Linear(150, 300)
 
     def encode(self, x):
@@ -90,7 +93,8 @@ class VAEmodel():
         self.batch_size = args.batch_size
         self.dataloader = data.DataLoader(dataset=self.dataset, batch_size = self.batch_size, shuffle = True)
         self.epoch_num = args.epochs
-        self.module=VAE().to(device)
+        self.latent_num = args.latent_variable_num
+        self.module=VAE(self.latent_num).to(device)
         self.optimizer = optim.Adam(self.module.parameters(), lr=1e-3)
 
     def loss_function(self,recon_x, x, mu, logvar):
@@ -131,21 +135,27 @@ class VAEmodel():
         with torch.no_grad():
             td=torch.tensor(testdata,dtype=torch.float32).to(device)
             recon_batch, mu, logvar = self.module(td)
-        svmdat=mu.view(len(testdata),9).detach().numpy()
+        svmdat=mu.view(len(testdata),-1).detach().numpy()
         svm.partial_fit(svmdat,testlabel,classes=[0,1])
         #svm.fit(svmdat,testlabel)
         print("the latest train dataset score",svm.score(svmdat,testlabel))
-        for i in range(5):
-            dat=np.reshape(np.array(scaler.inverse_transform(testdata[i*5].reshape(1,-1)),dtype=np.uint8),(-1,1))
-            rec=np.reshape(np.array(scaler.inverse_transform(recon_batch[i*5].reshape(1,-1)),dtype=np.uint8),(-1,1))
-            dimg=np.tile(dat,50)
-            drec=np.tile(rec,50)
-            cv2.imshow("origin",dimg)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
-            cv2.imshow("reconstructed",drec)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
+        utils.recon_error(scaler.inverse_transform(testdata),scaler.inverse_transform(recon_batch))
+        """average_error=0
+        for i in range(len(testdata)):
+            dat=np.reshape(np.array(scaler.inverse_transform(testdata[i].reshape(1,-1)),dtype=np.uint8),(-1,1))
+            rec=np.reshape(np.array(scaler.inverse_transform(recon_batch[i].reshape(1,-1)),dtype=np.uint8),(-1,1))
+            er=np.array(rec,dtype=np.float32)-np.array(dat,dtype=np.float32)
+            average_error+=sum(abs(er))/len(dat)
+            if i%10==0:
+                dimg=np.tile(dat,50)
+                drec=np.tile(rec,50)
+                cv2.imshow("origin",dimg)
+                cv2.waitKey(0)
+                cv2.destroyAllWindows()
+                cv2.imshow("reconstructed",drec)
+                cv2.waitKey(0)
+                cv2.destroyAllWindows()
+        print("average reconstruction error",average_error)"""
 
     
 
@@ -168,11 +178,11 @@ class VAEmodel():
     print('====> Test set loss: {:.4f}'.format(test_loss))"""
 
 if __name__ == "__main__":
-    unlabeledpath="vaetrain.csv"
-    featurepath="vaetrain.csv"
-    labelpath="vaelabel.csv"
-    testfeaturepath="vaetrain.csv"
-    testlabelpath="vaelabel.csv"
+    unlabeledpath="data/feature.csv"
+    featurepath="data/feature.csv"
+    labelpath="data/label.csv"
+    testfeaturepath="data/feature.csv"
+    testlabelpath="data/label.csv"
     feature=np.loadtxt(featurepath,delimiter="\t")
     label=np.loadtxt(labelpath,delimiter="\t")
     ufeature=np.loadtxt(unlabeledpath,delimiter="\t")
@@ -195,6 +205,6 @@ if __name__ == "__main__":
     #test(epoch)
     """
     with torch.no_grad():
-        sample = torch.randn(64, 9).to(device)
+        sample = torch.randn(64, args.latent_variable_num).to(device)
         sample = model.decode(sample).cpu()
     """
