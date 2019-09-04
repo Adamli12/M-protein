@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016/W32TeX) (preloaded format=pdflatex 2016.10.7)  2 SEP 2019 23:07
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016/W32TeX) (preloaded format=pdflatex 2016.10.7)  4 SEP 2019 01:50
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -141,28 +141,18 @@ LaTeX Font Info:    Font shape `OMS/ptm/m/n' in size <9> not available
 (Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 64.
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <10> not available
 (Font)              Font shape `OT1/ptm/b/n' tried instead on input line 67.
-Missing character: There is no Ã in font ptmr7t!
-Missing character: There is no ¤ in font ptmr7t!
-Missing character: There is no Ã in font ptmr7t!
-Missing character: There is no ¼ in font ptmr7t!
-
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
  [1{c:/texlive/2016/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
 
 
 
 ]
-Underfull \hbox (badness 3954) in paragraph at lines 83--84
-\OT1/ptm/m/n/10 Multiple tech-niques were used to tackle with small
- []
-
-
-Underfull \hbox (badness 1701) in paragraph at lines 83--84
-\OT1/ptm/m/n/10 datasets and par-tially la-beled datasets in-clud-ing ac-tive
- []
-
-(./M-protain diagnostics using generative active learning.bbl
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <10.95> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 84.
+Missing character: There is no Ã in font ptmr7t!
+Missing character: There is no ¤ in font ptmr7t!
+Missing character: There is no Ã in font ptmr7t!
+Missing character: There is no ¼ in font ptmr7t!
+ (./M-protain diagnostics using generative active learning.bbl
 Missing character: There is no Ã in font ptmr7t!
 Missing character: There is no ¤ in font ptmr7t!
 Missing character: There is no Ã in font ptmr7t!
@@ -174,17 +164,22 @@ Underfull \hbox (badness 1354) in paragraph at lines 26--32
 
 Missing character: There is no Ã in font ptmr7t!
 Missing character: There is no ¸ in font ptmr7t!
+
+Underfull \hbox (badness 1394) in paragraph at lines 74--79
+[]\OT1/ptm/m/n/10 Springenberg, J. T.  2015.  Un-su-per-vised and semi-
+ []
+
 ) [2] (./M-protain diagnostics using generative active learning.aux) ) 
 Here is how much of TeX's memory you used:
- 1669 strings out of 493014
- 24494 string characters out of 6137001
- 90023 words of memory out of 5000000
- 5197 multiletter control sequences out of 15000+600000
- 14641 words of font info for 29 fonts, out of 8000000 for 9000
+ 1675 strings out of 493014
+ 24598 string characters out of 6137001
+ 89077 words of memory out of 5000000
+ 5202 multiletter control sequences out of 15000+600000
+ 16774 words of font info for 32 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 37i,10n,23p,2137b,240s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 37i,10n,23p,1577b,240s stack positions out of 5000i,500n,10000p,200000b,80000s
 {c:/texlive/2016/texmf-dist/fonts/enc/dvips/base/8r.enc}<c:/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb><c:/texlive/2016/texmf-dist/fonts/type1/urw/times/utmb8a.pfb><c:/texlive/2016/texmf-dist/fonts/type1/urw/times/utmr8a.pfb><c:/texlive/2016/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on "M-protain diagnostics using generative active learning.pdf" (2 pages, 58751 bytes).
+Output written on "M-protain diagnostics using generative active learning.pdf" (2 pages, 59666 bytes).
 PDF statistics:
  28 PDF objects out of 1000 (max. 8388607)
  19 compressed objects within 1 object stream

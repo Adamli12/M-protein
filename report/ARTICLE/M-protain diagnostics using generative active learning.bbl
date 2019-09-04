@@ -36,6 +36,14 @@ Kingma, D.~P., and Welling, M.
 \newblock Auto-encoding variational bayes.
 \newblock {\em arXiv preprint arXiv:1312.6114}.
 
+\bibitem[\protect\citeauthoryear{Kingma \bgroup et al\mbox.\egroup
+  }{2014}]{kingma2014semi}
+Kingma, D.~P.; Mohamed, S.; Rezende, D.~J.; and Welling, M.
+\newblock 2014.
+\newblock Semi-supervised learning with deep generative models.
+\newblock In {\em Advances in neural information processing systems},
+  3581--3589.
+
 \bibitem[\protect\citeauthoryear{Larsen \bgroup et al\mbox.\egroup
   }{2015}]{larsen2015autoencoding}
 Larsen, A. B.~L.; Sønderby, S.~K.; Larochelle, H.; and Winther, O.
@@ -61,6 +69,13 @@ Settles, B.
 \newblock Active learning literature survey.
 \newblock Technical report, University of Wisconsin-Madison Department of
   Computer Sciences.
+
+\bibitem[\protect\citeauthoryear{Springenberg}{2015}]{springenberg2015unsupervised}
+Springenberg, J.~T.
+\newblock 2015.
+\newblock Unsupervised and semi-supervised learning with categorical generative
+  adversarial networks.
+\newblock {\em arXiv preprint arXiv:1511.06390}.
 
 \bibitem[\protect\citeauthoryear{Sun \bgroup et al\mbox.\egroup
   }{2017}]{sun2017revisiting}

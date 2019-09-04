@@ -82,4 +82,38 @@
   publisher = {IEEE},
 }
 
+@Misc{donahue2016adversarial,
+  author        = {Jeff Donahue and Philipp Krähenbühl and Trevor Darrell},
+  title         = {Adversarial Feature Learning},
+  year          = {2016},
+  archiveprefix = {arXiv},
+  eprint        = {1605.09782},
+  primaryclass  = {cs.LG},
+}
+
+@Misc{mirza2014conditional,
+  author        = {Mehdi Mirza and Simon Osindero},
+  title         = {Conditional Generative Adversarial Nets},
+  year          = {2014},
+  archiveprefix = {arXiv},
+  eprint        = {1411.1784},
+  primaryclass  = {cs.LG},
+}
+
+@Misc{larsen2015autoencoding,
+  author        = {Anders Boesen Lindbo Larsen and Søren Kaae Sønderby and Hugo Larochelle and Ole Winther},
+  title         = {Autoencoding beyond pixels using a learned similarity metric},
+  year          = {2015},
+  archiveprefix = {arXiv},
+  eprint        = {1512.09300},
+  primaryclass  = {cs.LG},
+}
+
+@Article{arjovsky2017wasserstein,
+  author  = {Arjovsky, Martin and Chintala, Soumith and Bottou, L{\'e}on},
+  title   = {Wasserstein gan},
+  journal = {arXiv preprint arXiv:1701.07875},
+  year    = {2017},
+}
+
 @Comment{jabref-meta: databaseType:bibtex;}
