@@ -138,4 +138,53 @@
   year    = {2011},
 }
 
+@InProceedings{Gal:2017:DBA:3305381.3305504,
+  author    = {Gal, Yarin and Islam, Riashat and Ghahramani, Zoubin},
+  title     = {Deep Bayesian Active Learning with Image Data},
+  booktitle = {Proceedings of the 34th International Conference on Machine Learning - Volume 70},
+  year      = {2017},
+  series    = {ICML'17},
+  pages     = {1183--1192},
+  publisher = {JMLR.org},
+  acmid     = {3305504},
+  location  = {Sydney, NSW, Australia},
+  numpages  = {10},
+  url       = {http://dl.acm.org/citation.cfm?id=3305381.3305504},
+}
+
+@Misc{kong2019active,
+  author        = {Quan Kong and Bin Tong and Martin Klinkigt and Yuki Watanabe and Naoto Akira and Tomokazu Murakami},
+  title         = {Active Generative Adversarial Network for Image Classification},
+  year          = {2019},
+  archiveprefix = {arXiv},
+  eprint        = {1906.07133},
+  primaryclass  = {cs.LG},
+}
+
+@InProceedings{huijser2017active,
+  author    = {Huijser, Miriam and van Gemert, Jan C},
+  title     = {Active decision boundary annotation with deep generative models},
+  booktitle = {Proceedings of the IEEE international conference on computer vision},
+  year      = {2017},
+  pages     = {5286--5295},
+}
+
+@Misc{tran2019bayesian,
+  author        = {Toan Tran and Thanh-Toan Do and Ian Reid and Gustavo Carneiro},
+  title         = {Bayesian Generative Active Deep Learning},
+  year          = {2019},
+  archiveprefix = {arXiv},
+  eprint        = {1904.11643},
+  primaryclass  = {cs.LG},
+}
+
+@Misc{goodfellow2016nips,
+  author        = {Ian Goodfellow},
+  title         = {NIPS 2016 Tutorial: Generative Adversarial Networks},
+  year          = {2016},
+  archiveprefix = {arXiv},
+  eprint        = {1701.00160},
+  primaryclass  = {cs.LG},
+}
+
 @Comment{jabref-meta: databaseType:bibtex;}

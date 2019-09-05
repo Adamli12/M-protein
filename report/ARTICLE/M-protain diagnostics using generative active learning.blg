@@ -1,46 +1,46 @@
-This is BibTeX, Version 0.99d (TeX Live 2016/W32TeX)
-Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+This is BibTeX, Version 0.99d (TeX Live 2019/W32TeX)
+Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
 The top-level auxiliary file: M-protain diagnostics using generative active learning.aux
 The style file: aaai.bst
 Database file #1: lib.bib
-You've used 15 entries,
+You've used 20 entries,
             2568 wiz_defined-function locations,
-            654 strings with 7141 characters,
-and the built_in function-call counts, 6016 in all, are:
-= -- 641
-> -- 268
-< -- 3
-+ -- 92
-- -- 90
-* -- 458
-:= -- 992
-add.period$ -- 72
-call.type$ -- 15
-change.case$ -- 106
-chr.to.int$ -- 15
-cite$ -- 15
-duplicate$ -- 227
-empty$ -- 399
-format.name$ -- 116
-if$ -- 1230
+            676 strings with 7904 characters,
+and the built_in function-call counts, 8208 in all, are:
+= -- 873
+> -- 362
+< -- 5
++ -- 124
+- -- 122
+* -- 612
+:= -- 1321
+add.period$ -- 95
+call.type$ -- 20
+change.case$ -- 142
+chr.to.int$ -- 20
+cite$ -- 20
+duplicate$ -- 311
+empty$ -- 560
+format.name$ -- 156
+if$ -- 1704
 int.to.chr$ -- 1
 int.to.str$ -- 0
-missing$ -- 11
-newline$ -- 90
-num.names$ -- 45
-pop$ -- 102
+missing$ -- 13
+newline$ -- 118
+num.names$ -- 60
+pop$ -- 149
 preamble$ -- 1
-purify$ -- 120
+purify$ -- 161
 quote$ -- 0
-skip$ -- 200
+skip$ -- 288
 stack$ -- 0
-substring$ -- 258
-swap$ -- 60
-text.length$ -- 3
+substring$ -- 363
+swap$ -- 92
+text.length$ -- 5
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 120
+type$ -- 160
 warning$ -- 0
-while$ -- 45
-width$ -- 22
-write$ -- 199
+while$ -- 61
+width$ -- 26
+write$ -- 263

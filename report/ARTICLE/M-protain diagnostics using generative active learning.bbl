@@ -21,6 +21,15 @@ Donahue, J.; Krähenbühl, P.; and Darrell, T.
 \newblock 2016.
 \newblock Adversarial feature learning.
 
+\bibitem[\protect\citeauthoryear{Gal, Islam, and
+  Ghahramani}{2017}]{Gal:2017:DBA:3305381.3305504}
+Gal, Y.; Islam, R.; and Ghahramani, Z.
+\newblock 2017.
+\newblock Deep bayesian active learning with image data.
+\newblock In {\em Proceedings of the 34th International Conference on Machine
+  Learning - Volume 70}, ICML'17,  1183--1192.
+\newblock JMLR.org.
+
 \bibitem[\protect\citeauthoryear{Goodfellow \bgroup et al\mbox.\egroup
   }{2014}]{goodfellow2014generative}
 Goodfellow, I.; Pouget-Abadie, J.; Mirza, M.; Xu, B.; Warde-Farley, D.; Ozair,
@@ -30,12 +39,25 @@ Goodfellow, I.; Pouget-Abadie, J.; Mirza, M.; Xu, B.; Warde-Farley, D.; Ozair,
 \newblock In {\em Advances in neural information processing systems},
   2672--2680.
 
+\bibitem[\protect\citeauthoryear{Goodfellow}{2016}]{goodfellow2016nips}
+Goodfellow, I.
+\newblock 2016.
+\newblock Nips 2016 tutorial: Generative adversarial networks.
+
 \bibitem[\protect\citeauthoryear{Houlsby \bgroup et al\mbox.\egroup
   }{2011}]{houlsby2011bayesian}
 Houlsby, N.; Husz{\'a}r, F.; Ghahramani, Z.; and Lengyel, M.
 \newblock 2011.
 \newblock Bayesian active learning for classification and preference learning.
 \newblock {\em arXiv preprint arXiv:1112.5745}.
+
+\bibitem[\protect\citeauthoryear{Huijser and van
+  Gemert}{2017}]{huijser2017active}
+Huijser, M., and van Gemert, J.~C.
+\newblock 2017.
+\newblock Active decision boundary annotation with deep generative models.
+\newblock In {\em Proceedings of the IEEE international conference on computer
+  vision},  5286--5295.
 
 \bibitem[\protect\citeauthoryear{Kingma and Welling}{2013}]{kingma2013auto}
 Kingma, D.~P., and Welling, M.
@@ -50,6 +72,12 @@ Kingma, D.~P.; Mohamed, S.; Rezende, D.~J.; and Welling, M.
 \newblock Semi-supervised learning with deep generative models.
 \newblock In {\em Advances in neural information processing systems},
   3581--3589.
+
+\bibitem[\protect\citeauthoryear{Kong \bgroup et al\mbox.\egroup
+  }{2019}]{kong2019active}
+Kong, Q.; Tong, B.; Klinkigt, M.; Watanabe, Y.; Akira, N.; and Murakami, T.
+\newblock 2019.
+\newblock Active generative adversarial network for image classification.
 
 \bibitem[\protect\citeauthoryear{Larsen \bgroup et al\mbox.\egroup
   }{2015}]{larsen2015autoencoding}
@@ -98,6 +126,12 @@ Tanner, M.~A., and Wong, W.~H.
 \newblock The calculation of posterior distributions by data augmentation.
 \newblock {\em Journal of the American statistical Association}
   82(398):528--540.
+
+\bibitem[\protect\citeauthoryear{Tran \bgroup et al\mbox.\egroup
+  }{2019}]{tran2019bayesian}
+Tran, T.; Do, T.-T.; Reid, I.; and Carneiro, G.
+\newblock 2019.
+\newblock Bayesian generative active deep learning.
 
 \bibitem[\protect\citeauthoryear{Zhu and Bento}{2017}]{Zhu2017GenerativeAA}
 Zhu, J.-J., and Bento, J.
