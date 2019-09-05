@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016/W32TeX) (preloaded format=pdflatex 2016.10.7)  4 SEP 2019 01:50
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016/W32TeX) (preloaded format=pdflatex 2016.10.7)  5 SEP 2019 00:43
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -164,25 +164,27 @@ Underfull \hbox (badness 1354) in paragraph at lines 26--32
 
 Missing character: There is no Ã in font ptmr7t!
 Missing character: There is no ¸ in font ptmr7t!
-
-Underfull \hbox (badness 1394) in paragraph at lines 74--79
+[2]
+Underfull \hbox (badness 1394) in paragraph at lines 81--86
 []\OT1/ptm/m/n/10 Springenberg, J. T.  2015.  Un-su-per-vised and semi-
  []
 
-) [2] (./M-protain diagnostics using generative active learning.aux) ) 
+) [3
+
+] (./M-protain diagnostics using generative active learning.aux) ) 
 Here is how much of TeX's memory you used:
- 1675 strings out of 493014
- 24598 string characters out of 6137001
- 89077 words of memory out of 5000000
- 5202 multiletter control sequences out of 15000+600000
+ 1677 strings out of 493014
+ 24627 string characters out of 6137001
+ 90109 words of memory out of 5000000
+ 5204 multiletter control sequences out of 15000+600000
  16774 words of font info for 32 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 37i,10n,23p,1577b,240s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 37i,10n,23p,1641b,240s stack positions out of 5000i,500n,10000p,200000b,80000s
 {c:/texlive/2016/texmf-dist/fonts/enc/dvips/base/8r.enc}<c:/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb><c:/texlive/2016/texmf-dist/fonts/type1/urw/times/utmb8a.pfb><c:/texlive/2016/texmf-dist/fonts/type1/urw/times/utmr8a.pfb><c:/texlive/2016/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on "M-protain diagnostics using generative active learning.pdf" (2 pages, 59666 bytes).
+Output written on "M-protain diagnostics using generative active learning.pdf" (3 pages, 61406 bytes).
 PDF statistics:
- 28 PDF objects out of 1000 (max. 8388607)
- 19 compressed objects within 1 object stream
+ 31 PDF objects out of 1000 (max. 8388607)
+ 21 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 

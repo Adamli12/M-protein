@@ -3,44 +3,44 @@ Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
 The top-level auxiliary file: M-protain diagnostics using generative active learning.aux
 The style file: aaai.bst
 Database file #1: lib.bib
-You've used 14 entries,
+You've used 15 entries,
             2568 wiz_defined-function locations,
-            650 strings with 6940 characters,
-and the built_in function-call counts, 5646 in all, are:
-= -- 603
-> -- 245
+            654 strings with 7141 characters,
+and the built_in function-call counts, 6016 in all, are:
+= -- 641
+> -- 268
 < -- 3
-+ -- 84
-- -- 82
-* -- 429
-:= -- 924
-add.period$ -- 67
-call.type$ -- 14
-change.case$ -- 98
-chr.to.int$ -- 14
-cite$ -- 14
-duplicate$ -- 214
-empty$ -- 380
-format.name$ -- 107
-if$ -- 1159
++ -- 92
+- -- 90
+* -- 458
+:= -- 992
+add.period$ -- 72
+call.type$ -- 15
+change.case$ -- 106
+chr.to.int$ -- 15
+cite$ -- 15
+duplicate$ -- 227
+empty$ -- 399
+format.name$ -- 116
+if$ -- 1230
 int.to.chr$ -- 1
 int.to.str$ -- 0
-missing$ -- 10
-newline$ -- 84
-num.names$ -- 42
-pop$ -- 95
+missing$ -- 11
+newline$ -- 90
+num.names$ -- 45
+pop$ -- 102
 preamble$ -- 1
-purify$ -- 111
+purify$ -- 120
 quote$ -- 0
-skip$ -- 190
+skip$ -- 200
 stack$ -- 0
-substring$ -- 253
-swap$ -- 58
+substring$ -- 258
+swap$ -- 60
 text.length$ -- 3
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 112
+type$ -- 120
 warning$ -- 0
-while$ -- 43
-width$ -- 20
-write$ -- 186
+while$ -- 45
+width$ -- 22
+write$ -- 199

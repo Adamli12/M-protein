@@ -116,4 +116,26 @@
   year    = {2017},
 }
 
+@InProceedings{kingma2014semi,
+  author    = {Kingma, Durk P and Mohamed, Shakir and Rezende, Danilo Jimenez and Welling, Max},
+  title     = {Semi-supervised learning with deep generative models},
+  booktitle = {Advances in neural information processing systems},
+  year      = {2014},
+  pages     = {3581--3589},
+}
+
+@Article{springenberg2015unsupervised,
+  author  = {Springenberg, Jost Tobias},
+  title   = {Unsupervised and semi-supervised learning with categorical generative adversarial networks},
+  journal = {arXiv preprint arXiv:1511.06390},
+  year    = {2015},
+}
+
+@Article{houlsby2011bayesian,
+  author  = {Houlsby, Neil and Husz{\'a}r, Ferenc and Ghahramani, Zoubin and Lengyel, M{\'a}t{\'e}},
+  title   = {Bayesian active learning for classification and preference learning},
+  journal = {arXiv preprint arXiv:1112.5745},
+  year    = {2011},
+}
+
 @Comment{jabref-meta: databaseType:bibtex;}

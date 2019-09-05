@@ -30,6 +30,13 @@ Goodfellow, I.; Pouget-Abadie, J.; Mirza, M.; Xu, B.; Warde-Farley, D.; Ozair,
 \newblock In {\em Advances in neural information processing systems},
   2672--2680.
 
+\bibitem[\protect\citeauthoryear{Houlsby \bgroup et al\mbox.\egroup
+  }{2011}]{houlsby2011bayesian}
+Houlsby, N.; Husz{\'a}r, F.; Ghahramani, Z.; and Lengyel, M.
+\newblock 2011.
+\newblock Bayesian active learning for classification and preference learning.
+\newblock {\em arXiv preprint arXiv:1112.5745}.
+
 \bibitem[\protect\citeauthoryear{Kingma and Welling}{2013}]{kingma2013auto}
 Kingma, D.~P., and Welling, M.
 \newblock 2013.
