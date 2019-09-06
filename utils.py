@@ -17,12 +17,12 @@ def recon_error(testdata,recon_batch):
         if i%10==0:
             dimg=np.tile(dat,50)
             drec=np.tile(rec,50)
-            cv2.imshow("origin",dimg)
+            """cv2.imshow("origin",dimg)
             cv2.waitKey(0)
             cv2.destroyAllWindows()
             cv2.imshow("reconstructed",drec)
             cv2.waitKey(0)
-            cv2.destroyAllWindows()
+            cv2.destroyAllWindows()"""
     average_error=average_error/len(testdata)
     print("average reconstruction error",average_error)
     return average_error

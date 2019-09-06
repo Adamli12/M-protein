@@ -17,14 +17,16 @@ from bigan import BiGANmodel
 parser = argparse.ArgumentParser(description='M-prtain main')
 parser.add_argument('--batch-size', type=int, default=4, metavar='N',
                     help='input batch size for training (default: 4)')
-parser.add_argument('--epochs', type=int, default=500, metavar='N',
-                    help='number of epochs to train (default: 500)')
+parser.add_argument('--epochs', type=int, default=150, metavar='N',
+                    help='number of epochs to train (default: 300)')
 parser.add_argument('--no-cuda', action='store_true', default=False,
                     help='enables CUDA training')
 parser.add_argument('--seed', type=int, default=1, metavar='S',
                     help='random seed (default: 1)')
 parser.add_argument('--log-interval', type=int, default=20, metavar='N',
                     help='how many batches to wait before logging training status')
+parser.add_argument('--latent-variable-num', type=int, default=9, metavar='N',
+                    help='how many latent variables for vae')
 args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
 
@@ -116,14 +118,36 @@ def active(folderpath, Gmodel):
     if Gmodel == "vae":
         Gscaler = MinMaxScaler()
         ufeature_sc = Gscaler.fit_transform(ufeature)#using large unlabeled data to normalize
-        feature_sc = Gscaler.fit(feature)
+        feature_sc = Gscaler.transform(feature)
         Gmo = VAEmodel(ufeature_sc, args)
         Gmo.train()
         Gmo.module.eval()
         with torch.no_grad():
             feature_sc = torch.tensor(feature_sc, dtype = torch.float32).to(device)
-            _, mu, _= Gmo.module(feature_sc)
+            recon, mu, _ = Gmo.module(feature_sc)
+            utils.recon_error(Gscaler.inverse_transform(feature_sc), Gscaler.inverse_transform(recon))
         svmfeature = mu
+
+#看VAE每个variable都表示什么
+        d=20
+        a=mu[d]
+        c=np.array(Gscaler.inverse_transform(feature_sc)[d],dtype=np.uint8)
+        b=5
+        delta=np.ones(a.shape)
+        img=np.tile(np.reshape(c,(-1,1)),50)
+        cv2.imshow("i",img)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+        for i in range(10):
+            delta[b]+=2*i
+            with torch.no_grad():
+                tes=torch.tensor(np.multiply(a,delta),dtype=torch.float32).to(device)
+                img=np.tile(np.reshape(Gmo.module.decode(tes).detach().numpy(),(-1,1)),50)
+            cv2.imshow("i",img)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
+
+        
     elif Gmodel == "gmm":
         Gmo = GMMmodel(visualization=0)
         svmfeature = Gmo.module.encode(feature)
@@ -194,4 +218,4 @@ def active(folderpath, Gmodel):
     print("train score:",svm.score(feature_sc,label))
     return svm
 
-active("data", "gmm")
+active("data", "vae")

@@ -1,18 +1,18 @@
 # Fdb version 3
-["bibtex M-protain diagnostics using generative active learning"] 1567712038 "M-protain diagnostics using generative active learning.aux" "M-protain diagnostics using generative active learning.bbl" "M-protain diagnostics using generative active learning" 1567718711
+["bibtex M-protain diagnostics using generative active learning"] 1567712038 "M-protain diagnostics using generative active learning.aux" "M-protain diagnostics using generative active learning.bbl" "M-protain diagnostics using generative active learning" 1567802928
   "./aaai.bst" 1500394990 21725 6d8748be1c9864381e507b2fcffde491 ""
-  "M-protain diagnostics using generative active learning.aux" 1567718710 2514 8bdbbb3561145620988441d836b29c94 "pdflatex"
+  "M-protain diagnostics using generative active learning.aux" 1567802927 2514 8bdbbb3561145620988441d836b29c94 "pdflatex"
   "lib.bib" 1567710989 6674 e627c21ce1ebd70087db2f7f1b7bfda7 ""
   (generated)
-  "M-protain diagnostics using generative active learning.blg"
   "M-protain diagnostics using generative active learning.bbl"
-["pdflatex"] 1567718710 "c:/Users/Rah/Documents/summer/M-protain/report/ARTICLE/M-protain diagnostics using generative active learning.tex" "c:/Users/Rah/Documents/summer/M-protain/report/ARTICLE/M-protain diagnostics using generative active learning.pdf" "M-protain diagnostics using generative active learning" 1567718711
-  "M-protain diagnostics using generative active learning.aux" 1567718710 2514 8bdbbb3561145620988441d836b29c94 "pdflatex"
+  "M-protain diagnostics using generative active learning.blg"
+["pdflatex"] 1567802927 "c:/Users/Rah/Documents/summer/M-protain/report/ARTICLE/M-protain diagnostics using generative active learning.tex" "c:/Users/Rah/Documents/summer/M-protain/report/ARTICLE/M-protain diagnostics using generative active learning.pdf" "M-protain diagnostics using generative active learning" 1567802928
+  "M-protain diagnostics using generative active learning.aux" 1567802927 2514 8bdbbb3561145620988441d836b29c94 "pdflatex"
   "M-protain diagnostics using generative active learning.bbl" 1567712038 5343 8e3fb75d10b950e11cf4729ad11be739 "bibtex M-protain diagnostics using generative active learning"
-  "M-protain diagnostics using generative active learning.tex" 1567718709 16668 a4bd27eb5162097ad057312799e3d4dd ""
+  "M-protain diagnostics using generative active learning.tex" 1567802926 18575 8167253644b8598debb1b61954526e97 ""
   "aaai20.sty" 1563283938 9596 ff73d13d82f0c21c8fc36dbe1054250a ""
-  "c:/Users/Rah/Documents/summer/M-protain/report/ARTICLE/M-protain diagnostics using generative active learning.aux" 1567718710 2514 8bdbbb3561145620988441d836b29c94 ""
-  "c:/Users/Rah/Documents/summer/M-protain/report/ARTICLE/M-protain diagnostics using generative active learning.tex" 1567718709 16668 a4bd27eb5162097ad057312799e3d4dd ""
+  "c:/Users/Rah/Documents/summer/M-protain/report/ARTICLE/M-protain diagnostics using generative active learning.aux" 1567802927 2514 8bdbbb3561145620988441d836b29c94 ""
+  "c:/Users/Rah/Documents/summer/M-protain/report/ARTICLE/M-protain diagnostics using generative active learning.tex" 1567802926 18575 8167253644b8598debb1b61954526e97 ""
   "c:/texlive/2019/texmf-dist/fonts/enc/dvips/base/8r.enc" 1566670558 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "c:/texlive/2019/texmf-dist/fonts/map/fontname/texfonts.map" 1566670769 3332 103109f5612ad95229751940c61aada0 ""
   "c:/texlive/2019/texmf-dist/fonts/tfm/adobe/times/ptmb7t.tfm" 1566672274 2172 fd0c924230362ff848a33632ed45dc23 ""
@@ -82,8 +82,8 @@
   "c:/texlive/2019/texmf-var/web2c/pdftex/pdflatex.fmt" 1566672743 4254431 5e0388cd5a0cf0814d320403d5e5836d ""
   "c:/texlive/2019/texmf.cnf" 1566672605 673 4ae7b2f49cee444c5343a45b5d0f169c ""
   (generated)
-  "c:/Users/Rah/Documents/summer/M-protain/report/ARTICLE/M-protain diagnostics using generative active learning.log"
+  "M-protain diagnostics using generative active learning.log"
+  "M-protain diagnostics using generative active learning.pdf"
   "M-protain diagnostics using generative active learning.aux"
   "c:/Users/Rah/Documents/summer/M-protain/report/ARTICLE/M-protain diagnostics using generative active learning.pdf"
-  "M-protain diagnostics using generative active learning.pdf"
-  "M-protain diagnostics using generative active learning.log"
+  "c:/Users/Rah/Documents/summer/M-protain/report/ARTICLE/M-protain diagnostics using generative active learning.log"

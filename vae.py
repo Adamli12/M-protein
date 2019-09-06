@@ -25,7 +25,7 @@ parser.add_argument('--seed', type=int, default=1, metavar='S',
                     help='random seed (default: 1)')
 parser.add_argument('--log-interval', type=int, default=20, metavar='N',
                     help='how many batches to wait before logging training status')
-parser.add_argument('--latent-variable-num', type=int, default=50, metavar='N',
+parser.add_argument('--latent-variable-num', type=int, default=100, metavar='N',
                     help='how many latent variables')
 args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
