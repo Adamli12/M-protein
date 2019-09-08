@@ -13,6 +13,7 @@ import argparse
 from gmm import GMMmodel
 from vae import VAEmodel
 from bigan import BiGANmodel
+from ae import AEmodel
 
 parser = argparse.ArgumentParser(description='M-prtain main')
 parser.add_argument('--batch-size', type=int, default=4, metavar='N',
@@ -114,6 +115,38 @@ def active(folderpath, Gmodel):
     feature = np.loadtxt(featurepath, delimiter = "\t")
     label = np.loadtxt(labelpath, delimiter = "\t")
     ufeature = np.loadtxt(ufeaturepath, delimiter = "\t")
+
+    if Gmodel == "ae":
+        Gscaler = MinMaxScaler()
+        ufeature_sc = Gscaler.fit_transform(ufeature)#using large unlabeled data to normalize
+        feature_sc = Gscaler.transform(feature)
+        Gmo = AEmodel(ufeature_sc, args)
+        Gmo.train()
+        Gmo.module.eval()
+        with torch.no_grad():
+            feature_sc = torch.tensor(feature_sc, dtype = torch.float32).to(device)
+            recon, mu = Gmo.module(feature_sc)
+            utils.recon_error(Gscaler.inverse_transform(feature_sc), Gscaler.inverse_transform(recon))
+        svmfeature = mu
+
+#看AE每个variable都表示什么
+        d=20
+        a=mu[d]
+        c=np.array(Gscaler.inverse_transform(feature_sc)[d],dtype=np.uint8)
+        b=5
+        delta=np.ones(a.shape)
+        img=np.tile(np.reshape(c,(-1,1)),50)
+        cv2.imshow("i",img)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+        for i in range(10):
+            delta[b]+=2*i
+            with torch.no_grad():
+                tes=torch.tensor(np.multiply(a,delta),dtype=torch.float32).to(device)
+                img=np.tile(np.reshape(Gmo.module.decode(tes).detach().numpy(),(-1,1)),50)
+            cv2.imshow("i",img)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
 
     if Gmodel == "vae":
         Gscaler = MinMaxScaler()
@@ -218,4 +251,4 @@ def active(folderpath, Gmodel):
     print("train score:",svm.score(feature_sc,label))
     return svm
 
-active("data", "vae")
+active("data", "ae")
