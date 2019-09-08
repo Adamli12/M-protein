@@ -110,10 +110,13 @@ In practice though, we use a variation of GMM that do not need to suppose the nu
 After we completes the first stage of training process, we now have a low dimension embedding of the real data(300 dimension signal). The second stage is to actively train a classifier in this latent variable space. Each iteration of active learning contains the training of classifier, sampling data to be labeled, expert labeling and updating the training set. The main difference between generative active learning and traditional pool based active learning is the way of sampling. Here we can sample any point near the decision hyperplane because we can transform any point in latent space to a point in data space. According to the classifier, different sampling strategy can be used.
 
 \section{Experiments}
-I did such experiments
+Different approaches to find the mapping between data space and latent space should be measured in several ways.
+
+Firstly, reconstruction error is the most important. In ideal case, the mapping should be injective or classifier in latent space will not be able to provide valid results in data space.
+
+Because of the active learning process, the embedding methods should satisfy these properties below.
 
 \section{Discussion}
-After I did these experiments
 
 \section{Conclusion}
 To sum up

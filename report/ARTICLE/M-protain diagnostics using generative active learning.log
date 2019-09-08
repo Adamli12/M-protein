@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/W32TeX) (preloaded format=pdflatex 2019.8.24)  6 SEP 2019 16:48
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/W32TeX) (preloaded format=pdflatex 2019.8.24)  8 SEP 2019 16:39
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -211,12 +211,12 @@ Underfull \hbox (badness 1888) in paragraph at lines 101--102
 \OT1/ptm/m/n/10 from low-dimension prior of la-tent vari-ables to high-
  []
 
-(c:/Users/Rah/Documents/summer/M-protain/report/ARTICLE/M-protain diagnostics using generative active learning.bbl
+(c:/Users/Rah/Documents/summer/M-protain/report/ARTICLE/M-protain diagnostics using generative active learning.bbl [3]
 Underfull \hbox (badness 1348) in paragraph at lines 35--41
 []\OT1/ptm/m/n/10 Goodfellow, I.; Pouget-Abadie, J.; Mirza, M.; Xu, B.;
  []
 
-[3]
+
 Underfull \hbox (badness 1394) in paragraph at lines 109--114
 []\OT1/ptm/m/n/10 Springenberg, J. T.  2015.  Un-su-per-vised and semi-
  []
@@ -233,7 +233,7 @@ Here is how much of TeX's memory you used:
  1141 hyphenation exceptions out of 8191
  41i,10n,25p,2030b,245s stack positions out of 5000i,500n,10000p,200000b,80000s
 {c:/texlive/2019/texmf-dist/fonts/enc/dvips/base/8r.enc}<c:/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><c:/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb><c:/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb><c:/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb><c:/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb><c:/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb><c:/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb><c:/texlive/2019/texmf-dist/fonts/type1/urw/times/utmb8a.pfb><c:/texlive/2019/texmf-dist/fonts/type1/urw/times/utmr8a.pfb><c:/texlive/2019/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on "c:/Users/Rah/Documents/summer/M-protain/report/ARTICLE/M-protain diagnostics using generative active learning.pdf" (4 pages, 112454 bytes).
+Output written on "c:/Users/Rah/Documents/summer/M-protain/report/ARTICLE/M-protain diagnostics using generative active learning.pdf" (4 pages, 112678 bytes).
 PDF statistics:
  58 PDF objects out of 1000 (max. 8388607)
  41 compressed objects within 1 object stream
