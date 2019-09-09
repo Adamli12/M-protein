@@ -141,6 +141,7 @@ def todensity(img):
     #plt.show()
     img2 = img[:,int(wi*0.25):int(wi*0.75)]
     dense=255-np.mean(img2,axis=1)
+    dense=dense-min(dense)
     dense[150]=dense[150]+1###BGM will not be able to calculate 0 sample situation
     dense[151]=dense[151]+1
     dense[152]=dense[152]+1
@@ -476,8 +477,8 @@ folder_to_data("generate_nopics","no",5)
 print(read_label("nolabels.csv",[0,0,0,0,0]))
 """
 if __name__ == "__main__":
-    #folder_to_vae_data("pics/trainpics","",6)
-    classify_folder("pics/trainpics","train",gt=gt,testflag=1,cut_n=6,numsort=0)
+    folder_to_vae_data("pics/trainpics","data/",6)
+    #classify_folder("pics/trainpics","train",gt=gt,testflag=1,cut_n=6,numsort=0)
 
 """
 ans=BGMreport("pics/trainpics/b.jpg",1,cut_n=6)

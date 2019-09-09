@@ -112,14 +112,19 @@ def active(folderpath, Gmodel):
     featurepath = os.path.join(folderpath, "feature.csv")
     labelpath = os.path.join(folderpath, "label.csv")
     ufeaturepath = os.path.join(folderpath, "feature.csv")
+    testfpath = os.path.join(folderpath, "testfeature.csv")
+    testlpath = os.path.join(folderpath, "testlabel.csv")
     feature = np.loadtxt(featurepath, delimiter = "\t")
     label = np.loadtxt(labelpath, delimiter = "\t")
     ufeature = np.loadtxt(ufeaturepath, delimiter = "\t")
+    tfeature = np.loadtxt(testfpath, delimiter = "\t")
+    tlabel = np.loadtxt(testlpath, delimiter = "\t")
 
     if Gmodel == "ae":
         Gscaler = MinMaxScaler()
         ufeature_sc = Gscaler.fit_transform(ufeature)#using large unlabeled data to normalize
         feature_sc = Gscaler.transform(feature)
+        tfeature_sc = Gscaler.transform(tfeature)
         Gmo = AEmodel(ufeature_sc, args)
         Gmo.train()
         Gmo.module.eval()
@@ -127,6 +132,9 @@ def active(folderpath, Gmodel):
             feature_sc = torch.tensor(feature_sc, dtype = torch.float32).to(device)
             recon, mu = Gmo.module(feature_sc)
             utils.recon_error(Gscaler.inverse_transform(feature_sc), Gscaler.inverse_transform(recon))
+            tfeature_sc = torch.tensor(tfeature_sc, dtype = torch.float32).to(device)
+            trecon, tmu = Gmo.module(tfeature_sc)
+            utils.recon_error(Gscaler.inverse_transform(tfeature_sc), Gscaler.inverse_transform(trecon))
         svmfeature = mu
 
 #看AE每个variable都表示什么
@@ -152,6 +160,7 @@ def active(folderpath, Gmodel):
         Gscaler = MinMaxScaler()
         ufeature_sc = Gscaler.fit_transform(ufeature)#using large unlabeled data to normalize
         feature_sc = Gscaler.transform(feature)
+        tfeature_sc = Gscaler.transform(tfeature)
         Gmo = VAEmodel(ufeature_sc, args)
         Gmo.train()
         Gmo.module.eval()
@@ -159,6 +168,9 @@ def active(folderpath, Gmodel):
             feature_sc = torch.tensor(feature_sc, dtype = torch.float32).to(device)
             recon, mu, _ = Gmo.module(feature_sc)
             utils.recon_error(Gscaler.inverse_transform(feature_sc), Gscaler.inverse_transform(recon))
+            tfeature_sc = torch.tensor(tfeature_sc, dtype = torch.float32).to(device)
+            trecon, tmu, _ = Gmo.module(tfeature_sc)
+            utils.recon_error(Gscaler.inverse_transform(tfeature_sc), Gscaler.inverse_transform(trecon))
         svmfeature = mu
 
 #看VAE每个variable都表示什么
@@ -185,7 +197,11 @@ def active(folderpath, Gmodel):
         Gmo = GMMmodel(visualization=0)
         svmfeature = Gmo.module.encode(feature)
         recon=Gmo.module.decode(svmfeature)
+        tGmo = GMMmodel(visualization=1)
+        tsvmfeature = tGmo.module.encode(tfeature)
+        trecon=tGmo.module.decode(tsvmfeature)
         utils.recon_error(feature,recon)
+        utils.recon_error(tfeature,trecon)
         ans = Gmo.module.rule_classication(svmfeature)
         #print([label[i] == ans[i] for i in range(len(label))])
         acc = sum([label[i] == ans[i] for i in range(len(label))])/ans.shape[0]
