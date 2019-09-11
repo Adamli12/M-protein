@@ -17,12 +17,12 @@ def recon_error(testdata,recon_batch):#controls if it shows reconstruction pictu
         if i%10==0:
             dimg=np.tile(dat,50)
             drec=np.tile(rec,50)
-            cv2.imshow("origin",dimg)
+            """cv2.imshow("origin",dimg)
             cv2.waitKey(0)
             cv2.destroyAllWindows()
             cv2.imshow("reconstructed",drec)
             cv2.waitKey(0)
-            cv2.destroyAllWindows()
+            cv2.destroyAllWindows()"""
     average_error=average_error/len(testdata)
     print("average reconstruction error",average_error)
     return average_error
@@ -308,52 +308,39 @@ def BGMreport(path,visualize=1,cut_n=6):
                 ans[7+i]=1
                 ans[0]=1
     return ans,BGM45
-"""
-def onepeakreport(path):
-    t1=130
-    t2=15
-    i=0
-    denses,_=finddensefromcut(path)
-    tail=int(len(denses[0])/50)
-    ders=[]
-    ders1=[]
+
+def derivative_filter(denses):
+    abn1list=[]
+    abn2list=[]
     for dense in denses:
-        i+=1
+        t1=145#低了？
+        t2=130
+        i=0
+        tail=int(len(dense)/50)
         if max(dense)>50:
-#做一个归一化，如果太小就根本不考虑
+        #做一个归一化，如果太小就根本不考虑
             dense=dense/max(dense)*255
-        ders.append(cv2.Sobel(cv2.Sobel(dense,cv2.CV_64F,0,1,ksize=3),cv2.CV_64F,0,1,ksize=3))
-#用二阶导来确定五个column有没有异常，一阶导来确定峰的位置，二阶导因为有双重性所以不能用来断定峰的位置
-        ders1.append(cv2.Sobel(dense,cv2.CV_64F,0,1,ksize=3))
-        #plt.subplot(2,3,i),plt.plot(ders1[i-1])
-        plt.subplot(2,3,i),plt.plot(dense)
+        der=cv2.Sobel(cv2.Sobel(dense,cv2.CV_64F,0,1,ksize=3),cv2.CV_64F,0,1,ksize=3)
+        #用二阶导来确定五个column有没有异常，一阶导来确定峰的位置，二阶导因为有双重性所以不能用来断定峰的位置
+        der1=cv2.Sobel(dense,cv2.CV_64F,0,1,ksize=3)
+        """plt.plot(der1)
         plt.ylim(-255,255)
         plt.xlim(tail,len(dense)-tail)
-    plt.show()
-    peakpo=[]
-    dermax=[]
-    for der in ders[1:]:
+        plt.show()
+        plt.plot(dense)
+        plt.ylim(-255,255)
+        plt.xlim(tail,len(dense)-tail)
+        plt.show()"""
         dernt=der[tail:len(dense)-tail]
-        dermax.append((np.max(dernt)-np.min(dernt))/2)
-    for der1 in ders1[1:]:
-        dernt=der1[tail:len(dense)-tail]
-        peakpo.append((np.argmax(dernt)+np.argmin(dernt))/2)
-    abn2=[1 if x>t1 else 0 for x in dermax]
-    abn1=[]
-    pod=len(ders[0])/t2
-    for i in [0,1,2]:
-        for j in [3,4]:
-            if abs(peakpo[i]-peakpo[j])<pod and dermax[i]>t1 and dermax[j]>t1:
-                abn1.append(1)
-            else:
-                abn1.append(0)
-    if max(abn2)==1:
-        abn3=1
-    else:
-        abn3=0
-    abn=[abn3]+abn1+abn2
-    return abn
-"""
+        dermax=(np.max(dernt)-np.min(dernt))/2
+        der1nt=der1[tail:len(dense)-tail]
+        der1max=(np.max(der1nt)-np.min(der1nt))/2
+        abn2=1 if dermax>t2 else 0
+        abn1=1 if der1max>t1 else 0
+        abn1list.append(abn1)
+        abn2list.append(abn2)
+    return abn1list,abn2list
+
 def read_label(path,ans):
     label=np.loadtxt(path,delimiter="\t")
     wr=[]
@@ -479,6 +466,12 @@ print(read_label("nolabels.csv",[0,0,0,0,0]))
 if __name__ == "__main__":
     folder_to_vae_data("pics/trainpics","data/",6)
     #classify_folder("pics/trainpics","train",gt=gt,testflag=1,cut_n=6,numsort=0)
+    """
+    generate_pics("generate_gkpics","generate_nopics",100)
+    folder_to_data("generate_gkpics","gk",5,)
+    folder_to_data("generate_nopics","no",5)
+    print(read_label("nolabels.csv",[0,0,0,0,0]))
+    """
 
 """
 ans=BGMreport("pics/trainpics/b.jpg",1,cut_n=6)

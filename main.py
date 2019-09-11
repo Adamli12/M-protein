@@ -137,7 +137,7 @@ def active(folderpath, Gmodel):
             utils.recon_error(Gscaler.inverse_transform(tfeature_sc), Gscaler.inverse_transform(trecon))
         svmfeature = mu
 
-#看AE每个variable都表示什么
+        """#看AE每个variable都表示什么
         d=20
         a=mu[d]
         c=np.array(Gscaler.inverse_transform(feature_sc)[d],dtype=np.uint8)
@@ -154,7 +154,7 @@ def active(folderpath, Gmodel):
                 img=np.tile(np.reshape(Gmo.module.decode(tes).detach().numpy(),(-1,1)),50)
             cv2.imshow("i",img)
             cv2.waitKey(0)
-            cv2.destroyAllWindows()
+            cv2.destroyAllWindows()"""
 
     if Gmodel == "vae":
         Gscaler = MinMaxScaler()
@@ -173,7 +173,7 @@ def active(folderpath, Gmodel):
             utils.recon_error(Gscaler.inverse_transform(tfeature_sc), Gscaler.inverse_transform(trecon))
         svmfeature = mu
 
-#看VAE每个variable都表示什么
+        """#看VAE每个variable都表示什么
         d=20
         a=mu[d]
         c=np.array(Gscaler.inverse_transform(feature_sc)[d],dtype=np.uint8)
@@ -190,22 +190,35 @@ def active(folderpath, Gmodel):
                 img=np.tile(np.reshape(Gmo.module.decode(tes).detach().numpy(),(-1,1)),50)
             cv2.imshow("i",img)
             cv2.waitKey(0)
-            cv2.destroyAllWindows()
+            cv2.destroyAllWindows()"""
 
         
     elif Gmodel == "gmm":
         Gmo = GMMmodel(visualization=0)
         svmfeature = Gmo.module.encode(feature)
         recon=Gmo.module.decode(svmfeature)
-        tGmo = GMMmodel(visualization=1)
+        tGmo = GMMmodel(visualization=0)
         tsvmfeature = tGmo.module.encode(tfeature)
         trecon=tGmo.module.decode(tsvmfeature)
         utils.recon_error(feature,recon)
         utils.recon_error(tfeature,trecon)
         ans = Gmo.module.rule_classication(svmfeature)
+        tans = Gmo.module.rule_classication(tsvmfeature)
         #print([label[i] == ans[i] for i in range(len(label))])
         acc = sum([label[i] == ans[i] for i in range(len(label))])/ans.shape[0]
-        print("rule based acc: ", acc)
+        tacc = sum([tlabel[i] == tans[i] for i in range(len(tlabel))])/tans.shape[0]
+        print("rule based train acc: ", acc)
+        print("rule based test acc: ", tacc)
+        ans = utils.derivative_filter(feature)
+        tans = utils.derivative_filter(tfeature)
+        acc = sum([label[i] == ans[0][i] for i in range(len(label))])/len(ans[0])
+        tacc = sum([tlabel[i] == tans[0][i] for i in range(len(tlabel))])/len(tans[0])
+        print("1st derivative rule based train acc: ", acc)
+        print("1st derivative rule based test acc: ", tacc)
+        acc = sum([label[i] == ans[1][i] for i in range(len(label))])/len(ans[1])
+        tacc = sum([tlabel[i] == tans[1][i] for i in range(len(tlabel))])/len(tans[1])
+        print("2nd derivative rule based train acc: ", acc)
+        print("2nd derivative rule based test acc: ", tacc)
     elif Gmodel == "bigan":
         pass
 
@@ -267,4 +280,4 @@ def active(folderpath, Gmodel):
     print("train score:",svm.score(feature_sc,label))
     return svm
 
-active("data", "ae")
+active("data", "gmm")
