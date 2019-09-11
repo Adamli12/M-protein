@@ -4,6 +4,9 @@ import cv2
 from matplotlib import pyplot as plt
 import os,sys
 from sklearn.linear_model import SGDClassifier
+from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
 import pickle
@@ -14,6 +17,7 @@ from gmm import GMMmodel
 from vae import VAEmodel
 from bigan import BiGANmodel
 from ae import AEmodel
+from end import ENDmodel
 
 parser = argparse.ArgumentParser(description='M-prtain main')
 parser.add_argument('--batch-size', type=int, default=4, metavar='N',
@@ -107,7 +111,7 @@ def sample(path, svm, expert_batch_num):
     samp=1
     return samp
 
-def active(folderpath, Gmodel):
+def active(folderpath, Gmodel, Cmodel):
     #data path
     featurepath = os.path.join(folderpath, "feature.csv")
     labelpath = os.path.join(folderpath, "label.csv")
@@ -120,6 +124,35 @@ def active(folderpath, Gmodel):
     tfeature = np.loadtxt(testfpath, delimiter = "\t")
     tlabel = np.loadtxt(testlpath, delimiter = "\t")
 
+    if Cmodel == "end_to_end":
+        Gscaler = MinMaxScaler()
+        ufeature_sc = Gscaler.fit_transform(ufeature)#using large unlabeled data to normalize
+        feature_sc = Gscaler.transform(feature)
+        tfeature_sc = Gscaler.transform(tfeature)
+        Gmo = ENDmodel(feature_sc, label, args)
+        Gmo.train()
+        Gmo.module.eval()
+        with torch.no_grad():
+            feature_sc = torch.tensor(feature_sc, dtype = torch.float32).to(device)
+            recon, mu, _, _ = Gmo.module(feature_sc)
+            print("train recon error")
+            utils.recon_error(Gscaler.inverse_transform(feature_sc), Gscaler.inverse_transform(recon))
+            tfeature_sc = torch.tensor(tfeature_sc, dtype = torch.float32).to(device)
+            trecon, tmu, _, _ = Gmo.module(tfeature_sc)
+            print("test recon error")
+            utils.recon_error(Gscaler.inverse_transform(tfeature_sc), Gscaler.inverse_transform(trecon))
+            ufeature_sc = torch.tensor(ufeature_sc, dtype = torch.float32).to(device)
+            urecon, umu, _, _= Gmo.module(ufeature_sc)
+            print("unlabeled recon error")
+            utils.recon_error(Gscaler.inverse_transform(ufeature_sc), Gscaler.inverse_transform(urecon))
+            _, _, _, ans = Gmo.module(feature_sc)
+            ans=np.array(ans.detach())
+            print("train classify acc", sum([label[i] == round(ans[i][0]) for i in range(len(label))])/len(ans))
+            _, _, _, tans = Gmo.module(tfeature_sc)
+            tans=np.array(tans.detach())
+            print("test classify acc", sum([tlabel[i] == round(tans[i][0]) for i in range(len(tlabel))])/len(tans))
+        return 0
+
     if Gmodel == "ae":
         Gscaler = MinMaxScaler()
         ufeature_sc = Gscaler.fit_transform(ufeature)#using large unlabeled data to normalize
@@ -131,11 +164,19 @@ def active(folderpath, Gmodel):
         with torch.no_grad():
             feature_sc = torch.tensor(feature_sc, dtype = torch.float32).to(device)
             recon, mu = Gmo.module(feature_sc)
+            print("train recon error")
             utils.recon_error(Gscaler.inverse_transform(feature_sc), Gscaler.inverse_transform(recon))
             tfeature_sc = torch.tensor(tfeature_sc, dtype = torch.float32).to(device)
             trecon, tmu = Gmo.module(tfeature_sc)
+            print("test recon error")
             utils.recon_error(Gscaler.inverse_transform(tfeature_sc), Gscaler.inverse_transform(trecon))
+            ufeature_sc = torch.tensor(ufeature_sc, dtype = torch.float32).to(device)
+            urecon, umu = Gmo.module(ufeature_sc)
+            print("unlabeled recon error")
+            utils.recon_error(Gscaler.inverse_transform(ufeature_sc), Gscaler.inverse_transform(urecon))
         svmfeature = mu
+        tsvmfeature = tmu
+        usvmfeature = umu
 
         """#看AE每个variable都表示什么
         d=20
@@ -167,11 +208,19 @@ def active(folderpath, Gmodel):
         with torch.no_grad():
             feature_sc = torch.tensor(feature_sc, dtype = torch.float32).to(device)
             recon, mu, _ = Gmo.module(feature_sc)
+            print("train recon error")
             utils.recon_error(Gscaler.inverse_transform(feature_sc), Gscaler.inverse_transform(recon))
             tfeature_sc = torch.tensor(tfeature_sc, dtype = torch.float32).to(device)
             trecon, tmu, _ = Gmo.module(tfeature_sc)
+            print("test recon error")
             utils.recon_error(Gscaler.inverse_transform(tfeature_sc), Gscaler.inverse_transform(trecon))
+            ufeature_sc = torch.tensor(ufeature_sc, dtype = torch.float32).to(device)
+            urecon, umu, _ = Gmo.module(ufeature_sc)
+            print("unlabeled recon error")
+            utils.recon_error(Gscaler.inverse_transform(ufeature_sc), Gscaler.inverse_transform(urecon))
         svmfeature = mu
+        tsvmfeature = tmu
+        usvmfeature = umu
 
         """#看VAE每个variable都表示什么
         d=20
@@ -197,11 +246,14 @@ def active(folderpath, Gmodel):
         Gmo = GMMmodel(visualization=0)
         svmfeature = Gmo.module.encode(feature)
         recon=Gmo.module.decode(svmfeature)
-        tGmo = GMMmodel(visualization=0)
-        tsvmfeature = tGmo.module.encode(tfeature)
-        trecon=tGmo.module.decode(tsvmfeature)
+        tsvmfeature = Gmo.module.encode(tfeature)
+        trecon=Gmo.module.decode(tsvmfeature)
+        usvmfeature = Gmo.module.encode(ufeature)
+        urecon=Gmo.module.decode(usvmfeature)
         utils.recon_error(feature,recon)
         utils.recon_error(tfeature,trecon)
+        utils.recon_error(ufeature,urecon)
+
         ans = Gmo.module.rule_classication(svmfeature)
         tans = Gmo.module.rule_classication(tsvmfeature)
         #print([label[i] == ans[i] for i in range(len(label))])
@@ -219,6 +271,7 @@ def active(folderpath, Gmodel):
         tacc = sum([tlabel[i] == tans[1][i] for i in range(len(tlabel))])/len(tans[1])
         print("2nd derivative rule based train acc: ", acc)
         print("2nd derivative rule based test acc: ", tacc)
+
     elif Gmodel == "bigan":
         pass
 
@@ -229,9 +282,33 @@ def active(folderpath, Gmodel):
 
     #scaling
     svmscaler = StandardScaler()
-    svmfeature_sc = svmscaler.fit_transform(svmfeature)#using large unlabeled data to normalize
+    svmscaler.fit_transform(usvmfeature)#using large unlabeled data to normalize
+    svmfeature_sc = svmscaler.transform(svmfeature)
+    tsvmfeature_sc = svmscaler.transform(tsvmfeature)
 
-    #preparing
+
+
+    if Cmodel == "linear_svm":
+        classifier = SVC(kernel="linear")
+        classifier.fit(svmfeature_sc, label)
+        print("train score: ", classifier.score(svmfeature_sc, label), "test score: ", classifier.score(tsvmfeature_sc, tlabel))
+    
+    if Cmodel == "rbf_svm":
+        classifier = SVC()
+        classifier.fit(svmfeature_sc, label)
+        print("train score: ", classifier.score(svmfeature_sc, label), "test score: ", classifier.score(tsvmfeature_sc, tlabel))
+    
+    if Cmodel == "decision_tree":
+        classifier = DecisionTreeClassifier()
+        classifier.fit(svmfeature_sc, label)
+        print("train score: ", classifier.score(svmfeature_sc, label), "test score: ", classifier.score(tsvmfeature_sc, tlabel))
+
+    if Cmodel == "random_forest":
+        classifier = RandomForestClassifier
+        classifier.fit(svmfeature_sc, label)
+        print("train score: ", classifier.score(svmfeature_sc, label), "test score: ", classifier.score(tsvmfeature_sc, tlabel))
+
+    """#preparing
     label = np.reshape(label, (-1,1))
     labeleddata = np.hstack((svmfeature_sc, label))
     utils.save_in_train_all(labeleddata, 0, os.path.join(folderpath, Gmodel))
@@ -259,12 +336,12 @@ def active(folderpath, Gmodel):
     print("the latest train dataset score",svm.score(testf,testl))
 
     train_svm(svm,None,traindata)
-    """dissum=0
+    dissum=0
     for feature in ufeature_sc:
         dissum+=(utils.decision_distance(svm,feature))
     dismean=dissum/len(ufeature_sc)"""
 
-    #begin training process step2
+    """#begin training process step2
     expert_batch_num=10
     balancing_ratio=0.5
     iter_num=10
@@ -278,6 +355,7 @@ def active(folderpath, Gmodel):
 
     #test
     print("train score:",svm.score(feature_sc,label))
-    return svm
+    return svm"""
+    return 0
 
-active("data", "gmm")
+active("data", "vae", "end_to_end")
