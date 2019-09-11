@@ -407,7 +407,10 @@ def folder_to_vae_data(path,pre,cut_n=6):
         ans=finddensefromcut(path1,cut_n)[0]
         ans1=BGMreport(path1,0,cut_n)
         for j in range(5):
-            train[i*5+j]=ans[j+1]
+            if cut_n==5:
+                train[i*5+j]=ans[j]
+            else:
+                train[i*5+j]=ans[j+1]
             label[i*5+j]=ans1[0][7+j]
         i+=1
         if i%20==0:
@@ -417,22 +420,46 @@ def folder_to_vae_data(path,pre,cut_n=6):
     np.savetxt(pre+"label.csv",label,delimiter="\t",fmt="%d")
     return 0
 
+def folder_to_vae_data_gkno(path,pre,cut_n=6):
+    i=0
+    train=np.zeros((len(os.listdir(path)*5),300))
+    label=np.zeros((len(os.listdir(path)*5)))
+    for img in os.listdir(path):
+        path1=os.path.join(path,img)
+        ans=finddensefromcut(path1,cut_n)[0]
+        for j in range(5):
+            if cut_n==5:
+                train[i*5+j]=ans[j]
+            else:
+                train[i*5+j]=ans[j+1]
+        i+=1
+        if i%20==0:
+            #print(i)
+            pass
+    if pre[-2:]=="gk":
+        for i in range(len(os.listdir(path))):
+            label[i*5]=1
+            label[i*5+3]=1
+    np.savetxt(pre+"feature.csv",train,delimiter="\t",fmt="%.4f")
+    np.savetxt(pre+"label.csv",label,delimiter="\t",fmt="%d")
+    return 0
+
 def generate_pics(pathgk,pathno,num):
     for i in range(num):
         G=toimage(np.array(weight_generator())*sample_generator(),mean_generator(),cov_generatorgk())
-        A=toimage(np.array(weight_generator())*sample_generator(),mean_generator(),cov_generatorn())
-        M=toimage(np.array(weight_generator())*sample_generator(),mean_generator(),cov_generatorn())
+        A=toimage(np.array(weight_generator())*sample_generator()/2,mean_generator(),cov_generatorn())
+        M=toimage(np.array(weight_generator())*sample_generator()/2,mean_generator(),cov_generatorn())
         K=toimage(np.array(weight_generator())*sample_generator(),mean_generator(),cov_generatorgk())
-        L=toimage(np.array(weight_generator())*sample_generator(),mean_generator(),cov_generatorn())
+        L=toimage(np.array(weight_generator())*sample_generator()/2,mean_generator(),cov_generatorn())
         img=showgeneratedimg([G,A,M,K,L])
         cv2.imwrite(pathgk+"/"+str(i)+".jpg",img)
 
     for i in range(num):
-        G=toimage(np.array(weight_generator())*sample_generator(),mean_generator(),cov_generatorn())
-        A=toimage(np.array(weight_generator())*sample_generator(),mean_generator(),cov_generatorn())
-        M=toimage(np.array(weight_generator())*sample_generator(),mean_generator(),cov_generatorn())
-        K=toimage(np.array(weight_generator())*sample_generator(),mean_generator(),cov_generatorn())
-        L=toimage(np.array(weight_generator())*sample_generator(),mean_generator(),cov_generatorn())
+        G=toimage(np.array(weight_generator())*sample_generator()/2,mean_generator(),cov_generatorn())
+        A=toimage(np.array(weight_generator())*sample_generator()/2,mean_generator(),cov_generatorn())
+        M=toimage(np.array(weight_generator())*sample_generator()/2,mean_generator(),cov_generatorn())
+        K=toimage(np.array(weight_generator())*sample_generator()/2,mean_generator(),cov_generatorn())
+        L=toimage(np.array(weight_generator())*sample_generator()/2,mean_generator(),cov_generatorn())
         img=showgeneratedimg([G,A,M,K,L])
         cv2.imwrite(pathno+"/"+str(i)+".jpg",img)
     return 0
@@ -467,12 +494,12 @@ print(read_label("nolabels.csv",[0,0,0,0,0]))
 if __name__ == "__main__":
     #classify_folder("pics/trainpics","train",gt=gt,testflag=1,cut_n=6,numsort=0)
     
-    generate_pics("generate_gkpics","generate_nopics",10)
+    generate_pics("generate_gkpics","generate_nopics",200)
     #folder_to_data("generate_gkpics","gk",5,)
     #folder_to_data("generate_nopics","no",5)
     #print(read_label("nolabels.csv",[0,0,0,0,0]))
-    folder_to_vae_data("generate_gkpics","data/gk",5)
-    folder_to_vae_data("generate_nopics","data/no",5)
+    folder_to_vae_data_gkno("generate_gkpics","data/gk",5)
+    folder_to_vae_data_gkno("generate_nopics","data/no",5)
     
 
 """

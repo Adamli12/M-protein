@@ -23,8 +23,8 @@ from end import ENDmodel
 parser = argparse.ArgumentParser(description='M-prtain main')
 parser.add_argument('--batch-size', type=int, default=4, metavar='N',
                     help='input batch size for training (default: 4)')
-parser.add_argument('--epochs', type=int, default=150, metavar='N',
-                    help='number of epochs to train (default: 300)')
+parser.add_argument('--epochs', type=int, default=15, metavar='N',
+                    help='number of epochs to train (default: 15)')
 parser.add_argument('--no-cuda', action='store_true', default=False,
                     help='enables CUDA training')
 parser.add_argument('--seed', type=int, default=1, metavar='S',
@@ -377,4 +377,4 @@ def active(folderpath, Gmodel, Cmodel):
     return svm"""
     return 0
 
-active("data", "pca", "linear_svm")
+active("data", "vae", "linear_svm")
