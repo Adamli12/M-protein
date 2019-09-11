@@ -9,6 +9,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.decomposition import PCA
 import pickle
 import utils
 import copy
@@ -153,6 +154,21 @@ def active(folderpath, Gmodel, Cmodel):
             print("test classify acc", sum([tlabel[i] == round(tans[i][0]) for i in range(len(tlabel))])/len(tans))
         return 0
 
+    if Gmodel == "pca":
+        Gmo = PCA(9)
+        usvmfeature = Gmo.fit_transform(ufeature)
+        svmfeature = Gmo.transform(feature)
+        tsvmfeature = Gmo.transform(tfeature)
+        recon=Gmo.inverse_transform(svmfeature)
+        trecon=Gmo.inverse_transform(tsvmfeature)
+        urecon=Gmo.inverse_transform(usvmfeature)
+        print("train")
+        utils.recon_error(feature,recon)
+        print("test")
+        utils.recon_error(tfeature,trecon)
+        print("unlabel")
+        utils.recon_error(ufeature,urecon)
+
     if Gmodel == "ae":
         Gscaler = MinMaxScaler()
         ufeature_sc = Gscaler.fit_transform(ufeature)#using large unlabeled data to normalize
@@ -250,8 +266,11 @@ def active(folderpath, Gmodel, Cmodel):
         trecon=Gmo.module.decode(tsvmfeature)
         usvmfeature = Gmo.module.encode(ufeature)
         urecon=Gmo.module.decode(usvmfeature)
+        print("train")
         utils.recon_error(feature,recon)
+        print('test')
         utils.recon_error(tfeature,trecon)
+        print("unlabel")
         utils.recon_error(ufeature,urecon)
 
         ans = Gmo.module.rule_classication(svmfeature)
@@ -304,8 +323,8 @@ def active(folderpath, Gmodel, Cmodel):
         print("train score: ", classifier.score(svmfeature_sc, label), "test score: ", classifier.score(tsvmfeature_sc, tlabel))
 
     if Cmodel == "random_forest":
-        classifier = RandomForestClassifier
-        classifier.fit(svmfeature_sc, label)
+        classifier = RandomForestClassifier()
+        classifier.fit(X=svmfeature_sc, y=label)
         print("train score: ", classifier.score(svmfeature_sc, label), "test score: ", classifier.score(tsvmfeature_sc, tlabel))
 
     """#preparing
@@ -358,4 +377,4 @@ def active(folderpath, Gmodel, Cmodel):
     return svm"""
     return 0
 
-active("data", "vae", "end_to_end")
+active("data", "pca", "linear_svm")
