@@ -411,7 +411,8 @@ def folder_to_vae_data(path,pre,cut_n=6):
             label[i*5+j]=ans1[0][7+j]
         i+=1
         if i%20==0:
-            print(i)
+            #print(i)
+            pass
     np.savetxt(pre+"feature.csv",train,delimiter="\t",fmt="%.4f")
     np.savetxt(pre+"label.csv",label,delimiter="\t",fmt="%d")
     return 0
@@ -464,14 +465,15 @@ folder_to_data("generate_nopics","no",5)
 print(read_label("nolabels.csv",[0,0,0,0,0]))
 """
 if __name__ == "__main__":
-    folder_to_vae_data("pics/trainpics","data/",6)
     #classify_folder("pics/trainpics","train",gt=gt,testflag=1,cut_n=6,numsort=0)
-    """
-    generate_pics("generate_gkpics","generate_nopics",100)
-    folder_to_data("generate_gkpics","gk",5,)
-    folder_to_data("generate_nopics","no",5)
-    print(read_label("nolabels.csv",[0,0,0,0,0]))
-    """
+    
+    generate_pics("generate_gkpics","generate_nopics",10)
+    #folder_to_data("generate_gkpics","gk",5,)
+    #folder_to_data("generate_nopics","no",5)
+    #print(read_label("nolabels.csv",[0,0,0,0,0]))
+    folder_to_vae_data("generate_gkpics","data/gk",5)
+    folder_to_vae_data("generate_nopics","data/no",5)
+    
 
 """
 ans=BGMreport("pics/trainpics/b.jpg",1,cut_n=6)
