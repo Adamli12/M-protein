@@ -396,7 +396,7 @@ def active(folderpath, Gmodel, Cmodel):
 
 test_acc=np.zeros(10)
 for i in range(10):
-    t=active("data", "gmm", "linear_svm")
+    t=active("data", "vae", "linear_svm")
     print(t)
     test_acc[i]=t
 std=np.sqrt(np.cov(test_acc,rowvar=False))
