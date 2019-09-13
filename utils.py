@@ -309,12 +309,21 @@ def BGMreport(path,visualize=1,cut_n=6):
                 ans[0]=1
     return ans,BGM45
 
+def mean_filter(denses):
+    tm=8.5
+    meanlist=[]
+    for dense in denses:
+        m=np.mean(dense)
+        a=1 if m>tm else 0
+        meanlist.append(a)
+    return meanlist
+
 def derivative_filter(denses):
     abn1list=[]
     abn2list=[]
     for dense in denses:
         t1=145#低了？
-        t2=130
+        t2=200
         i=0
         tail=int(len(dense)/50)
         if max(dense)>50:
@@ -494,7 +503,7 @@ print(read_label("nolabels.csv",[0,0,0,0,0]))
 if __name__ == "__main__":
     #classify_folder("pics/trainpics","train",gt=gt,testflag=1,cut_n=6,numsort=0)
     
-    generate_pics("generate_gkpics","generate_nopics",200)
+    generate_pics("generate_gkpics","generate_nopics",20)
     #folder_to_data("generate_gkpics","gk",5,)
     #folder_to_data("generate_nopics","no",5)
     #print(read_label("nolabels.csv",[0,0,0,0,0]))

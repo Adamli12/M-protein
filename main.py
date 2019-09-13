@@ -10,6 +10,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.decomposition import PCA
+from sklearn.model_selection import train_test_split
 import pickle
 import utils
 import copy
@@ -114,16 +115,18 @@ def sample(path, svm, expert_batch_num):
 
 def active(folderpath, Gmodel, Cmodel):
     #data path
-    featurepath = os.path.join(folderpath, "feature.csv")
-    labelpath = os.path.join(folderpath, "label.csv")
-    ufeaturepath = os.path.join(folderpath, "feature.csv")
-    testfpath = os.path.join(folderpath, "testfeature.csv")
-    testlpath = os.path.join(folderpath, "testlabel.csv")
+    testfpath = os.path.join(folderpath, "g100feature.csv")
+    testlpath = os.path.join(folderpath, "g100label.csv")
+    ufeaturepath = os.path.join(folderpath, "gufeature.csv")
+    featurepath = os.path.join(folderpath, "r60feature.csv")
+    labelpath = os.path.join(folderpath, "r60label.csv")
     feature = np.loadtxt(featurepath, delimiter = "\t")
     label = np.loadtxt(labelpath, delimiter = "\t")
     ufeature = np.loadtxt(ufeaturepath, delimiter = "\t")
-    tfeature = np.loadtxt(testfpath, delimiter = "\t")
-    tlabel = np.loadtxt(testlpath, delimiter = "\t")
+    """tfeature = np.loadtxt(testfpath, delimiter = "\t")
+    tlabel = np.loadtxt(testlpath, delimiter = "\t")"""
+    feature, tfeature, label, tlabel = train_test_split(feature,label,test_size=0.33)
+
 
     if Cmodel == "end_to_end":
         Gscaler = MinMaxScaler()
@@ -151,8 +154,9 @@ def active(folderpath, Gmodel, Cmodel):
             print("train classify acc", sum([label[i] == round(ans[i][0]) for i in range(len(label))])/len(ans))
             _, _, _, tans = Gmo.module(tfeature_sc)
             tans=np.array(tans.detach())
-            print("test classify acc", sum([tlabel[i] == round(tans[i][0]) for i in range(len(tlabel))])/len(tans))
-        return 0
+            t_acc=sum([tlabel[i] == round(tans[i][0]) for i in range(len(tlabel))])/len(tans)
+            print("test classify acc", t_acc)
+        return t_acc
 
     if Gmodel == "pca":
         Gmo = PCA(9)
@@ -164,6 +168,9 @@ def active(folderpath, Gmodel, Cmodel):
         urecon=Gmo.inverse_transform(usvmfeature)
         print("train")
         utils.recon_error(feature,recon)
+
+        #return utils.recon_error(feature,recon)
+
         print("test")
         utils.recon_error(tfeature,trecon)
         print("unlabel")
@@ -182,6 +189,9 @@ def active(folderpath, Gmodel, Cmodel):
             recon, mu = Gmo.module(feature_sc)
             print("train recon error")
             utils.recon_error(Gscaler.inverse_transform(feature_sc), Gscaler.inverse_transform(recon))
+
+            #return utils.recon_error(Gscaler.inverse_transform(feature_sc), Gscaler.inverse_transform(recon))
+
             tfeature_sc = torch.tensor(tfeature_sc, dtype = torch.float32).to(device)
             trecon, tmu = Gmo.module(tfeature_sc)
             print("test recon error")
@@ -225,7 +235,10 @@ def active(folderpath, Gmodel, Cmodel):
             feature_sc = torch.tensor(feature_sc, dtype = torch.float32).to(device)
             recon, mu, _ = Gmo.module(feature_sc)
             print("train recon error")
-            utils.recon_error(Gscaler.inverse_transform(feature_sc), Gscaler.inverse_transform(recon))
+            train_recon = utils.recon_error(Gscaler.inverse_transform(feature_sc), Gscaler.inverse_transform(recon))
+
+            #return train_recon
+
             tfeature_sc = torch.tensor(tfeature_sc, dtype = torch.float32).to(device)
             trecon, tmu, _ = Gmo.module(tfeature_sc)
             print("test recon error")
@@ -264,14 +277,13 @@ def active(folderpath, Gmodel, Cmodel):
         recon=Gmo.module.decode(svmfeature)
         tsvmfeature = Gmo.module.encode(tfeature)
         trecon=Gmo.module.decode(tsvmfeature)
-        usvmfeature = Gmo.module.encode(ufeature)
-        urecon=Gmo.module.decode(usvmfeature)
         print("train")
         utils.recon_error(feature,recon)
+
+        #return utils.recon_error(feature,recon)
+
         print('test')
         utils.recon_error(tfeature,trecon)
-        print("unlabel")
-        utils.recon_error(ufeature,urecon)
 
         ans = Gmo.module.rule_classication(svmfeature)
         tans = Gmo.module.rule_classication(tsvmfeature)
@@ -282,10 +294,12 @@ def active(folderpath, Gmodel, Cmodel):
         print("rule based test acc: ", tacc)
         ans = utils.derivative_filter(feature)
         tans = utils.derivative_filter(tfeature)
-        acc = sum([label[i] == ans[0][i] for i in range(len(label))])/len(ans[0])
-        tacc = sum([tlabel[i] == tans[0][i] for i in range(len(tlabel))])/len(tans[0])
-        print("1st derivative rule based train acc: ", acc)
-        print("1st derivative rule based test acc: ", tacc)
+        mans = utils.mean_filter(feature)
+        mtans = utils.mean_filter(tfeature)
+        acc = sum([label[i] == mans[i] for i in range(len(label))])/len(mans)
+        tacc = sum([tlabel[i] == mtans[i] for i in range(len(tlabel))])/len(mtans)
+        print("mean rule based train acc: ", acc)
+        print("mean rule based test acc: ", tacc)
         acc = sum([label[i] == ans[1][i] for i in range(len(label))])/len(ans[1])
         tacc = sum([tlabel[i] == tans[1][i] for i in range(len(tlabel))])/len(tans[1])
         print("2nd derivative rule based train acc: ", acc)
@@ -301,31 +315,34 @@ def active(folderpath, Gmodel, Cmodel):
 
     #scaling
     svmscaler = StandardScaler()
-    svmscaler.fit_transform(usvmfeature)#using large unlabeled data to normalize
+    svmscaler.fit(svmfeature)#should be using large unlabeled data to normalize
     svmfeature_sc = svmscaler.transform(svmfeature)
     tsvmfeature_sc = svmscaler.transform(tsvmfeature)
-
-
 
     if Cmodel == "linear_svm":
         classifier = SVC(kernel="linear")
         classifier.fit(svmfeature_sc, label)
+        print(classifier.coef_)
         print("train score: ", classifier.score(svmfeature_sc, label), "test score: ", classifier.score(tsvmfeature_sc, tlabel))
+        return classifier.score(tsvmfeature_sc, tlabel)
     
     if Cmodel == "rbf_svm":
         classifier = SVC()
         classifier.fit(svmfeature_sc, label)
         print("train score: ", classifier.score(svmfeature_sc, label), "test score: ", classifier.score(tsvmfeature_sc, tlabel))
+        return classifier.score(tsvmfeature_sc, tlabel)
     
     if Cmodel == "decision_tree":
         classifier = DecisionTreeClassifier()
         classifier.fit(svmfeature_sc, label)
         print("train score: ", classifier.score(svmfeature_sc, label), "test score: ", classifier.score(tsvmfeature_sc, tlabel))
+        return classifier.score(tsvmfeature_sc, tlabel)
 
     if Cmodel == "random_forest":
         classifier = RandomForestClassifier()
         classifier.fit(X=svmfeature_sc, y=label)
         print("train score: ", classifier.score(svmfeature_sc, label), "test score: ", classifier.score(tsvmfeature_sc, tlabel))
+        return classifier.score(tsvmfeature_sc, tlabel)
 
     """#preparing
     label = np.reshape(label, (-1,1))
@@ -377,4 +394,11 @@ def active(folderpath, Gmodel, Cmodel):
     return svm"""
     return 0
 
-active("data", "vae", "linear_svm")
+test_acc=np.zeros(10)
+for i in range(10):
+    t=active("data", "gmm", "linear_svm")
+    print(t)
+    test_acc[i]=t
+std=np.sqrt(np.cov(test_acc,rowvar=False))
+halfci=1.96*std/np.sqrt(10)
+print("test_acc",np.mean(test_acc),"+-",halfci)
