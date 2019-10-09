@@ -19,8 +19,8 @@ class GMM():
         allweights=[]
         BGM45=np.zeros((x.shape[0],3*self.n_components))
         for i in range(x.shape[0]):
-            BGM=BayesianGaussianMixture(n_components=self.n_components,covariance_type='spherical',weight_concentration_prior=1e-10,max_iter=5000,tol=1e-7,n_init=5)
-            #BGM=BayesianGaussianMixture(n_components=self.n_components,covariance_type='spherical',weight_concentration_prior=1e-10,max_iter=500)
+            #BGM=BayesianGaussianMixture(n_components=self.n_components,covariance_type='spherical',weight_concentration_prior=1e-10,max_iter=5000,tol=1e-7,n_init=5)
+            BGM=BayesianGaussianMixture(n_components=self.n_components,covariance_type='spherical',weight_concentration_prior=1e-10,max_iter=500)
             BGM.fit(samples[i])
             means=np.reshape(BGM.means_,(-1,))
             permu=np.argsort(means)
