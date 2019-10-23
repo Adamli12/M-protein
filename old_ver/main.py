@@ -517,12 +517,9 @@ folder_to_data("generate_nopics","no",5)
 print(read_label("nolabels.csv",[0,0,0,0,0]))
 """
 if __name__ == "__main__":
-    folder_to_vae_data("pics/trainpics","vae",6)
-    folder_to_data("pics/trainpics","t",6)
-
+    #folder_to_vae_data("pics/trainpics","vae",6)
+    ans=BGMreport("trainpics/l1.jpg",1,cut_n=6)
+    print(ans[0])
+    print(ans[1])
 """
-ans=BGMreport("pics/trainpics/b.jpg",1,cut_n=6)
-print(ans[0])
-#print(ans[1])
-
 classify_folder("pics/trainpics","train",gt=gt,testflag=1,cut_n=6,numsort=0)"""
