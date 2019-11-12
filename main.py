@@ -20,11 +20,12 @@ from vae import VAEmodel
 from bigan import BiGANmodel
 from ae import AEmodel
 from end import ENDmodel
+from nonvaeend import nENDmodel
 
 parser = argparse.ArgumentParser(description='M-prtain main')
 parser.add_argument('--batch-size', type=int, default=4, metavar='N',
                     help='input batch size for training (default: 4)')
-parser.add_argument('--epochs', type=int, default=15, metavar='N',
+parser.add_argument('--epochs', type=int, default=200, metavar='N',
                     help='number of epochs to train (default: 15)')
 parser.add_argument('--no-cuda', action='store_true', default=False,
                     help='enables CUDA training')
@@ -157,6 +158,26 @@ def active(folderpath, Gmodel, Cmodel):
             t_acc=sum([tlabel[i] == round(tans[i][0]) for i in range(len(tlabel))])/len(tans)
             print("test classify acc", t_acc)
         return t_acc
+    
+    if Cmodel == "non_vae_end_to_end":
+        Gscaler = MinMaxScaler()
+        ufeature_sc = Gscaler.fit_transform(ufeature)#using large unlabeled data to normalize
+        feature_sc = Gscaler.transform(feature)
+        tfeature_sc = Gscaler.transform(tfeature)
+        Gmo = nENDmodel(feature_sc, label, args)
+        Gmo.train()
+        Gmo.module.eval()
+        with torch.no_grad():
+            feature_sc = torch.tensor(feature_sc, dtype = torch.float32).to(device)
+            ans = Gmo.module(feature_sc)
+            ans=np.array(ans.detach())
+            print("train classify acc", sum([label[i] == round(ans[i][0]) for i in range(len(label))])/len(ans))
+            tfeature_sc = torch.tensor(tfeature_sc, dtype = torch.float32).to(device)
+            tans = Gmo.module(tfeature_sc)
+            tans=np.array(tans.detach())
+            t_acc=sum([tlabel[i] == round(tans[i][0]) for i in range(len(tlabel))])/len(tans)
+            print("test classify acc", t_acc)
+        return t_acc
 
     if Gmodel == "pca":
         Gmo = PCA(9)
@@ -272,7 +293,7 @@ def active(folderpath, Gmodel, Cmodel):
 
         
     elif Gmodel == "gmm":
-        Gmo = GMMmodel(visualization=1)
+        Gmo = GMMmodel(visualization=0)
         svmfeature = Gmo.module.encode(feature)
         recon=Gmo.module.decode(svmfeature)
         tsvmfeature = Gmo.module.encode(tfeature)
@@ -394,11 +415,14 @@ def active(folderpath, Gmodel, Cmodel):
     return svm"""
     return 0
 
-test_acc=np.zeros(10)
+"""test_acc=np.zeros(10)
 for i in range(10):
-    t=active("data", "gmm", "rbf_svm")
+    t=active("data", "non_vae_end_to_end", "non_vae_end_to_end")
     print(t)
     test_acc[i]=t
 std=np.sqrt(np.cov(test_acc,rowvar=False))
 halfci=1.96*std/np.sqrt(10)
-print("test_acc",np.mean(test_acc),"+-",halfci)
+print("test_acc",np.mean(test_acc),"+-",halfci)"""
+
+t=active("data", "gmm", "random_forest")
+print(t)

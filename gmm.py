@@ -4,11 +4,20 @@ from sklearn.mixture import BayesianGaussianMixture
 from matplotlib import pyplot as plt
 
 class GMM():
-    def __init__(self, visualization=0, lofd=300, n_components=3, t3=0.07):
+    def __init__(self, visualization=0, lofd=300, n_components=3, t3=0.07,ig=3,fo=2,som=3.5,somw=0.15,somc=400,exception1=2.5,exception2=70,maxds=80,wth=0.05):
         self.visualization=visualization
         self.lofd=lofd
         self.n_components=n_components
         self.t3=t3
+        self.ignore_threshold=ig
+        self.far_overlap_threshold=fo
+        self.som_threshold=som
+        self.som_weight_threshold=somw
+        self.som_cov_threshold=somc
+        self.far_overlap_exception1=exception1
+        self.far_overlap_exception2=exception2
+        self.maxd_threshold=maxds
+        self.weight_threshold=wth
 
     def encode(self,x):
         samples=list()
@@ -75,32 +84,32 @@ class GMM():
             for j in range(self.n_components):
                 for l in range(self.n_components):
                     if j<l:
-                        if normedweights[i][j]/normedweights[i][l]>3 or normedweights[i][j]/normedweights[i][l]<0.3333:#ignore when weight difference is too large
+                        if normedweights[i][j]/normedweights[i][l]>self.ignore_threshold or normedweights[i][j]/normedweights[i][l]<1/self.ignore_threshold:#ignore when weight difference is too large
                             continue
-                        if allcovs[i][j]/normedweights[i][j]/allcovs[i][l]*normedweights[i][l]/abs(allmeans[i][j]-allmeans[i][l])*utils.mean(np.sqrt(allcovs[i][j]),np.sqrt(allcovs[i][l]))>2 or allcovs[i][l]/normedweights[i][l]/allcovs[i][j]*normedweights[i][j]/abs(allmeans[i][j]-allmeans[i][l])*utils.mean(np.sqrt(allcovs[i][j]),np.sqrt(allcovs[i][l]))>2:#if the cov difference is large than it will be ignored from far overlap because there should be two peaks in the original density plot
+                        if allcovs[i][j]/normedweights[i][j]/allcovs[i][l]*normedweights[i][l]/abs(allmeans[i][j]-allmeans[i][l])*utils.mean(np.sqrt(allcovs[i][j]),np.sqrt(allcovs[i][l]))>self.far_overlap_threshold or allcovs[i][l]/normedweights[i][l]/allcovs[i][j]*normedweights[i][j]/abs(allmeans[i][j]-allmeans[i][l])*utils.mean(np.sqrt(allcovs[i][j]),np.sqrt(allcovs[i][l]))>self.far_overlap_threshold:#if the cov difference is large than it will be ignored from far overlap because there should be two peaks in the original density plot
                         #near overlap situation is when a sharp peak is on a mild one. it happens when monoclonal peak has a background polyclonal peak. here we amplify the sharp peaks' weight when their cov difference is large enough or their distance is close enough so that it will be detected as abnormal in the classification step
-                            if abs(allmeans[i][j]-allmeans[i][l])<3.5*np.sqrt(max(allcovs[i][j],allcovs[i][l])):
+                            if abs(allmeans[i][j]-allmeans[i][l])<self.som_threshold*np.sqrt(max(allcovs[i][j],allcovs[i][l])):
                                 neww=normedweights[i][j]+normedweights[i][l]
-                                if allcovs[i][l]/normedweights[i][l]/allcovs[i][j]*normedweights[i][j]>1 and normedweights[i][j]>0.15:
-                                    if allcovs[i][j]<400:
+                                if allcovs[i][l]/normedweights[i][l]/allcovs[i][j]*normedweights[i][j]>1 and normedweights[i][j]>self.som_weight_threshold:
+                                    if allcovs[i][j]<self.som_cov_threshold:
                                         normedweights[i][j]=neww
                                 else:
-                                    if allcovs[i][l]<400:
+                                    if allcovs[i][l]<self.som_cov_threshold:
                                         normedweights[i][l]=neww
                             continue
-                        if allcovs[i][j]/normedweights[i][j]/sum(allweights[i])<self.t3/2.5 or allcovs[i][l]/normedweights[i][l]/sum(allweights[i])<self.t3/2.5:#if one of the considered peak has very small variance, then it should not be far overlap situation where the original peak is mild
+                        if allcovs[i][j]/normedweights[i][j]/sum(allweights[i])<self.t3/self.far_overlap_exception1 or allcovs[i][l]/normedweights[i][l]/sum(allweights[i])<self.t3/self.far_overlap_exception1:#if one of the considered peak has very small variance, then it should not be far overlap situation where the original peak is mild
                             continue
-                        if allcovs[i][j]<70 or allcovs[i][l]<70:
+                        if allcovs[i][j]<self.far_overlap_exception2 or allcovs[i][l]<self.far_overlap_exception2:
                             continue
-                        elif abs(allmeans[i][j]-allmeans[i][l])<3.5*np.sqrt(max(allcovs[i][j],allcovs[i][l])):#far overlap situation where there is only a mild peak in the original density plot, and GMM model break it down to two sharper peaks to fit the guassian curves more accurately. here we just suppress the peaks and thus we cannot determine the column is abnormal because of the two considered components
+                        elif abs(allmeans[i][j]-allmeans[i][l])<self.som_threshold*np.sqrt(max(allcovs[i][j],allcovs[i][l])):#far overlap situation where there is only a mild peak in the original density plot, and GMM model break it down to two sharper peaks to fit the guassian curves more accurately. here we just suppress the peaks and thus we cannot determine the column is abnormal because of the two considered components
                             pre[i][j]=pre[i][l]=1           
         for i in range(z.shape[0]):
             for j in range(self.n_components):
                 if pre[i][j]==1:
                     continue
-                if maxd[i]<80:
+                if maxd[i]<self.maxd_threshold:
                     continue
-                elif normedweights[i][j]<0.05:
+                elif normedweights[i][j]<self.weight_threshold:
                     continue
                 if allcovs[i][j]/normedweights[i][j]/sum(allweights[i])>self.t3:###t-figure
                     continue
