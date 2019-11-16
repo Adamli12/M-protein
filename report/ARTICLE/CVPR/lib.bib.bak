@@ -1,0 +1,213 @@
+% Encoding: UTF-8
+
+@Article{Zhu2017GenerativeAA,
+  author  = {Jia-Jie Zhu and Jos{\'e} Bento},
+  title   = {Generative Adversarial Active Learning},
+  journal = {ArXiv},
+  year    = {2017},
+  volume  = {abs/1702.07956},
+}
+
+@Article{chapelle2009semi,
+  author    = {Chapelle, Olivier and Scholkopf, Bernhard and Zien, Alexander},
+  title     = {Semi-supervised learning (chapelle, o. et al., eds.; 2006)[book reviews]},
+  journal   = {IEEE Transactions on Neural Networks},
+  year      = {2009},
+  volume    = {20},
+  number    = {3},
+  pages     = {542--542},
+  publisher = {IEEE},
+}
+
+@InProceedings{sun2017revisiting,
+  author    = {Sun, Chen and Shrivastava, Abhinav and Singh, Saurabh and Gupta, Abhinav},
+  title     = {Revisiting unreasonable effectiveness of data in deep learning era},
+  booktitle = {Proceedings of the IEEE international conference on computer vision},
+  year      = {2017},
+  pages     = {843--852},
+}
+
+@Article{buhrmester2011amazon,
+  author    = {Buhrmester, Michael and Kwang, Tracy and Gosling, Samuel D},
+  title     = {Amazon's Mechanical Turk: A new source of inexpensive, yet high-quality, data?},
+  journal   = {Perspectives on psychological science},
+  year      = {2011},
+  volume    = {6},
+  number    = {1},
+  pages     = {3--5},
+  publisher = {Sage Publications Sage CA: Los Angeles, CA},
+}
+
+@TechReport{settles2009active,
+  author      = {Settles, Burr},
+  title       = {Active learning literature survey},
+  institution = {University of Wisconsin-Madison Department of Computer Sciences},
+  year        = {2009},
+}
+
+@InProceedings{goodfellow2014generative,
+  author    = {Goodfellow, Ian and Pouget-Abadie, Jean and Mirza, Mehdi and Xu, Bing and Warde-Farley, David and Ozair, Sherjil and Courville, Aaron and Bengio, Yoshua},
+  title     = {Generative adversarial nets},
+  booktitle = {Advances in neural information processing systems},
+  year      = {2014},
+  pages     = {2672--2680},
+}
+
+@Article{kingma2013auto,
+  author  = {Kingma, Diederik P and Welling, Max},
+  title   = {Auto-encoding variational bayes},
+  journal = {arXiv preprint arXiv:1312.6114},
+  year    = {2013},
+}
+
+@Article{tanner1987calculation,
+  author    = {Tanner, Martin A and Wong, Wing Hung},
+  title     = {The calculation of posterior distributions by data augmentation},
+  journal   = {Journal of the American statistical Association},
+  year      = {1987},
+  volume    = {82},
+  number    = {398},
+  pages     = {528--540},
+  publisher = {Taylor \& Francis},
+}
+
+@Article{pan2009survey,
+  author    = {Pan, Sinno Jialin and Yang, Qiang},
+  title     = {A survey on transfer learning},
+  journal   = {IEEE Transactions on knowledge and data engineering},
+  year      = {2009},
+  volume    = {22},
+  number    = {10},
+  pages     = {1345--1359},
+  publisher = {IEEE},
+}
+
+@Misc{donahue2016adversarial,
+  author        = {Jeff Donahue and Philipp Krähenbühl and Trevor Darrell},
+  title         = {Adversarial Feature Learning},
+  year          = {2016},
+  archiveprefix = {arXiv},
+  eprint        = {1605.09782},
+  primaryclass  = {cs.LG},
+}
+
+@Misc{mirza2014conditional,
+  author        = {Mehdi Mirza and Simon Osindero},
+  title         = {Conditional Generative Adversarial Nets},
+  year          = {2014},
+  archiveprefix = {arXiv},
+  eprint        = {1411.1784},
+  primaryclass  = {cs.LG},
+}
+
+@Misc{larsen2015autoencoding,
+  author        = {Anders Boesen Lindbo Larsen and Søren Kaae Sønderby and Hugo Larochelle and Ole Winther},
+  title         = {Autoencoding beyond pixels using a learned similarity metric},
+  year          = {2015},
+  archiveprefix = {arXiv},
+  eprint        = {1512.09300},
+  primaryclass  = {cs.LG},
+}
+
+@Article{arjovsky2017wasserstein,
+  author  = {Arjovsky, Martin and Chintala, Soumith and Bottou, L{\'e}on},
+  title   = {Wasserstein gan},
+  journal = {arXiv preprint arXiv:1701.07875},
+  year    = {2017},
+}
+
+@InProceedings{kingma2014semi,
+  author    = {Kingma, Durk P and Mohamed, Shakir and Rezende, Danilo Jimenez and Welling, Max},
+  title     = {Semi-supervised learning with deep generative models},
+  booktitle = {Advances in neural information processing systems},
+  year      = {2014},
+  pages     = {3581--3589},
+}
+
+@Article{springenberg2015unsupervised,
+  author  = {Springenberg, Jost Tobias},
+  title   = {Unsupervised and semi-supervised learning with categorical generative adversarial networks},
+  journal = {arXiv preprint arXiv:1511.06390},
+  year    = {2015},
+}
+
+@Article{houlsby2011bayesian,
+  author  = {Houlsby, Neil and Husz{\'a}r, Ferenc and Ghahramani, Zoubin and Lengyel, M{\'a}t{\'e}},
+  title   = {Bayesian active learning for classification and preference learning},
+  journal = {arXiv preprint arXiv:1112.5745},
+  year    = {2011},
+}
+
+@InProceedings{Gal:2017:DBA:3305381.3305504,
+  author    = {Gal, Yarin and Islam, Riashat and Ghahramani, Zoubin},
+  title     = {Deep Bayesian Active Learning with Image Data},
+  booktitle = {Proceedings of the 34th International Conference on Machine Learning - Volume 70},
+  year      = {2017},
+  series    = {ICML'17},
+  pages     = {1183--1192},
+  publisher = {JMLR.org},
+  acmid     = {3305504},
+  location  = {Sydney, NSW, Australia},
+  numpages  = {10},
+  url       = {http://dl.acm.org/citation.cfm?id=3305381.3305504},
+}
+
+@Misc{kong2019active,
+  author        = {Quan Kong and Bin Tong and Martin Klinkigt and Yuki Watanabe and Naoto Akira and Tomokazu Murakami},
+  title         = {Active Generative Adversarial Network for Image Classification},
+  year          = {2019},
+  archiveprefix = {arXiv},
+  eprint        = {1906.07133},
+  primaryclass  = {cs.LG},
+}
+
+@InProceedings{huijser2017active,
+  author    = {Huijser, Miriam and van Gemert, Jan C},
+  title     = {Active decision boundary annotation with deep generative models},
+  booktitle = {Proceedings of the IEEE international conference on computer vision},
+  year      = {2017},
+  pages     = {5286--5295},
+}
+
+@Misc{tran2019bayesian,
+  author        = {Toan Tran and Thanh-Toan Do and Ian Reid and Gustavo Carneiro},
+  title         = {Bayesian Generative Active Deep Learning},
+  year          = {2019},
+  archiveprefix = {arXiv},
+  eprint        = {1904.11643},
+  primaryclass  = {cs.LG},
+}
+
+@Misc{goodfellow2016nips,
+  author        = {Ian Goodfellow},
+  title         = {NIPS 2016 Tutorial: Generative Adversarial Networks},
+  year          = {2016},
+  archiveprefix = {arXiv},
+  eprint        = {1701.00160},
+  primaryclass  = {cs.LG},
+}
+
+@Article{ATTIAS2000A,
+  author  = {ATTIAS,H.},
+  title   = {A variational Bayesian framework for graphical models},
+  journal = {NIPS'00},
+  year    = {2000},
+}
+
+@Article{ATTIAS2000A,
+  author  = {ATTIAS,H.},
+  title   = {A variational Bayesian framework for graphical models},
+  journal = {NIPS'00},
+  year    = {2000},
+}
+
+@Article{scikit-learn,
+  author  = {Pedregosa, F. and Varoquaux, G. and Gramfort, A. and Michel, V. and Thirion, B. and Grisel, O. and Blondel, M. and Prettenhofer, P. and Weiss, R. and Dubourg, V. and Vanderplas, J. and Passos, A. and Cournapeau, D. and Brucher, M. and Perrot, M. and Duchesnay, E.},
+  title   = {Scikit-learn: Machine Learning in {P}ython},
+  journal = {Journal of Machine Learning Research},
+  year    = {2011},
+  volume  = {12},
+  pages   = {2825--2830},
+}
+
+@Comment{jabref-meta: databaseType:bibtex;}

@@ -1,5 +1,8 @@
 import numpy as np
 import torch
+from torchvision import datasets, transforms
+from torchvision.utils import save_image
+from torch.utils import data
 import cv2
 from matplotlib import pyplot as plt
 import os,sys
@@ -21,6 +24,8 @@ from bigan import BiGANmodel
 from ae import AEmodel
 from end import ENDmodel
 from nonvaeend import nENDmodel
+from cnnae import CNNAEmodel
+from PIL import Image
 
 parser = argparse.ArgumentParser(description='M-prtain main')
 parser.add_argument('--batch-size', type=int, default=4, metavar='N',
@@ -35,6 +40,7 @@ parser.add_argument('--log-interval', type=int, default=20, metavar='N',
                     help='how many batches to wait before logging training status')
 parser.add_argument('--latent-variable-num', type=int, default=9, metavar='N',
                     help='how many latent variables for vae')
+parser.add_argument("--trained",type=bool,default=True,metavar='N',help="the net is trained or not")
 args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
 
@@ -43,6 +49,17 @@ torch.manual_seed(args.seed)
 device = torch.device("cuda" if args.cuda else "cpu")
 
 kwargs = {'num_workers': 1, 'pin_memory': True} if args.cuda else {}
+
+def to_img(x):
+    x = x.clamp(0, 1)
+    x = x.view(x.size(0), 1, 28, 28)
+    return x
+
+def to_img255(x):
+    x = x.clamp(0, 255)
+    x = x.view(x.size(0), 1, 28, 28)
+    return x/255
+
 
 def generate_balance(folderpath,svm,g_num,dis_filter,svmscaler,Gscaler):
     mindis=dis_filter*dismean
@@ -90,43 +107,99 @@ def train_svm(svm,traindatab,traindatag):
     print("the latest train dataset score",svm.score(testf,testl))
     return 0
 
-def expert_label(folderpath,g_num,feature_num,svmscaler,Gscaler,model):
-    path=folderpath + "/expert/generated.txt"
-    generated=np.loadtxt(path,delimiter="\t")
+def train_classifier(svm,labeleddata,testfeature,testlabel):
+    feature_sc=labeleddata[:,:-1]
+    label=labeleddata[:,-1]
+    svm.fit(feature_sc,label)
+    """pred=svm.predict(feature_sc)
+    truelabel=pred==label
+    for i in range(len(truelabel)):
+        if truelabel[i]==0:
+            print("picture",i//5,"column",i%5)"""
+    #print("the latest training set score",svm.score(feature_sc,label))
+    #print("the latest test set score",svm.score(testfeature,testlabel))
+    return svm.score(testfeature,testlabel)
+
+def random_add(folderpath, expert_batch_num, unknownsvmfeature_sc, unknownlabel):
+    rlist=np.random.choice(len(unknownlabel),expert_batch_num,replace=False)
+    dat=np.hstack((unknownsvmfeature_sc[rlist],unknownlabel[rlist].reshape((-1,1))))
+    utils.save_in_random(dat,folderpath)
+    return 0
+
+def expert_label(folderpath,g_num,svmscaler,model,iter):
+    with open(os.path.join(folderpath,"activepic.pkl"),"rb") as f:
+        activepic=pickle.load(f)
+    path=os.path.join(folderpath,"generated.txt")
+    generated=np.loadtxt(path)
+    feature_num=generated.shape[1]
     trainadd=np.zeros((g_num,feature_num+1))
     trainadd[:,:feature_num]=generated
     generated=svmscaler.inverse_transform(generated)
-    denses=model.module.decode(generated)
-    denses=np.array(Gscaler.inverse_transform(denses),dtype="uint8")
+    denses=np.squeeze(model.decode(generated))
+    #denses=np.array(Gscaler.inverse_transform(denses),dtype="uint8")
     j=0
     for dense in denses:
-        dimg=np.tile(np.reshape(dense,(-1,1)),50)
-        cv2.imshow("generated",dimg)
+        activepic[iter,j]=dense
+        #dimg=np.tile(np.reshape(dense,(-1,1)),50)
+        cv2.imshow("generated",dense)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
-        ans=input("please enter answer:(1 for abnormal, 0 for normal)")
+        ans=input("please enter answer:(3 or 8)")
         trainadd[j,-1]=ans
         j+=1
-    utils.save_in_train_all(trainadd,1,folderpath)
+    with open(os.path.join(folderpath,"activepic.pkl"),"wb") as f:
+        pickle.dump(activepic,f)
+    utils.save_in_train_all(trainadd,folderpath)
     return 0
 
 def sample(path, svm, expert_batch_num):
-    samp=1
-    return samp
+    knowndata=np.loadtxt(os.path.join(path,"knowndata.txt"))
+    knownfeature=knowndata[:,:-1]
+    knownlabel=knowndata[:,-1]
+    distance=[]
+    for i in range(len(knownfeature)):
+        datapoint=knownfeature[i]
+        distance.append(utils.decision_distance(svm,datapoint))
+    permu=np.argsort(np.reshape(np.array(distance),-1))
+    originpoints=np.zeros((expert_batch_num,knownfeature.shape[1]))
+    opdistance=[]
+    for i in range(expert_batch_num):
+        originpoints[i]=knownfeature[permu[i]]
+        opdistance.append(distance[permu[i]])
+    generatedunlabel=[]
+    for i in range(expert_batch_num):
+        generatedunlabel.append(utils.projection_point(svm,originpoints[i],opdistance[i]))
+    np.savetxt(os.path.join(path,"generated.txt"),np.squeeze(np.array(generatedunlabel)))
+    return 0
 
-def active(folderpath, Gmodel, Cmodel):
+def active(folderpath, Gmodel, Cmodel, dataset=None):
     #data path
-    testfpath = os.path.join(folderpath, "g100feature.csv")
-    testlpath = os.path.join(folderpath, "g100label.csv")
-    ufeaturepath = os.path.join(folderpath, "gufeature.csv")
-    featurepath = os.path.join(folderpath, "r60feature.csv")
-    labelpath = os.path.join(folderpath, "r60label.csv")
-    feature = np.loadtxt(featurepath, delimiter = "\t")
-    label = np.loadtxt(labelpath, delimiter = "\t")
-    ufeature = np.loadtxt(ufeaturepath, delimiter = "\t")
-    """tfeature = np.loadtxt(testfpath, delimiter = "\t")
-    tlabel = np.loadtxt(testlpath, delimiter = "\t")"""
-    feature, tfeature, label, tlabel = train_test_split(feature,label,test_size=0.33)
+    if dataset==None:
+        testfpath = os.path.join(folderpath, "g100feature.csv")
+        testlpath = os.path.join(folderpath, "g100label.csv")
+        ufeaturepath = os.path.join(folderpath, "gufeature.csv")
+        featurepath = os.path.join(folderpath, "r60feature.csv")
+        labelpath = os.path.join(folderpath, "r60label.csv")
+        feature = np.loadtxt(featurepath, delimiter = "\t")
+        label = np.loadtxt(labelpath, delimiter = "\t")
+        ufeature = np.loadtxt(ufeaturepath, delimiter = "\t")
+        """tfeature = np.loadtxt(testfpath, delimiter = "\t")
+        tlabel = np.loadtxt(testlpath, delimiter = "\t")"""
+        feature, tfeature, label, tlabel = train_test_split(feature,label,test_size=0.33)
+    else:
+        feature=dataset[0].data.float()/255
+        label=dataset[0].targets
+        kepti=[i for i in range(len(label)) if (label[i]==3 or label[i]==8)]
+        feature=feature[kepti]
+        label=label[kepti]
+        knownfeature, unknownfeature, knownlabel, unknownlabel = map(torch.from_numpy,train_test_split(feature.numpy(),label.numpy(),test_size=0.99))
+        tfeature=dataset[1].data.float()/255
+        tlabel=dataset[1].targets
+        tkepti=[i for i in range(len(tlabel)) if (tlabel[i]==3 or tlabel[i]==8)]
+        tfeature=tfeature[tkepti]
+        tlabel=tlabel[tkepti]
+        ufeature=feature
+
 
 
     if Cmodel == "end_to_end":
@@ -291,7 +364,36 @@ def active(folderpath, Gmodel, Cmodel):
             cv2.waitKey(0)
             cv2.destroyAllWindows()"""
 
-        
+    if Gmodel == "cnnae":
+        ufeature_sc = ufeature
+        knownfeature_sc = knownfeature
+        unknownfeature_sc = unknownfeature
+        tfeature_sc = tfeature
+        Gmo = CNNAEmodel(ufeature_sc)
+        if args.trained==False:
+            Gmo.train()
+            Gmo.save()
+        else:
+            Gmo.load()
+        Gmo.module.eval()
+        with torch.no_grad():
+            knownfeature_sc = knownfeature_sc.float().to(device).view(knownfeature_sc.size(0),1,knownfeature_sc.size(1),knownfeature_sc.size(2))
+            knownrecon, knownmu = Gmo.module(knownfeature_sc)
+            unknownfeature_sc = unknownfeature_sc.float().to(device).view(unknownfeature_sc.size(0),1,unknownfeature_sc.size(1),unknownfeature_sc.size(2))
+            unknownrecon, unknownmu = Gmo.module(unknownfeature_sc)
+            """for i in range(5):
+                img=to_img(recon[i])
+                save_image(img,"reconstructed_pics/train"+str(i)+".png")"""
+            tfeature_sc = tfeature_sc.float().to(device).view(tfeature_sc.size(0),1,tfeature_sc.size(1),tfeature_sc.size(2))
+            trecon, tmu = Gmo.module(tfeature_sc)
+            ufeature_sc = ufeature_sc.float().to(device).view(ufeature_sc.size(0),1,ufeature_sc.size(1),ufeature_sc.size(2))
+            urecon, umu = Gmo.module(ufeature_sc)
+        knownsvmfeature = knownmu
+        unknownsvmfeature = unknownmu
+        tsvmfeature = tmu
+        usvmfeature = umu
+
+
     elif Gmodel == "gmm":
         Gmo = GMMmodel(visualization=0)
         svmfeature = Gmo.module.encode(feature)
@@ -336,35 +438,89 @@ def active(folderpath, Gmodel, Cmodel):
 
     #scaling
     svmscaler = StandardScaler()
-    svmscaler.fit(svmfeature)#should be using large unlabeled data to normalize
-    svmfeature_sc = svmscaler.transform(svmfeature)
+    svmscaler.fit(usvmfeature)#should be using large unlabeled data to normalize
+    knownsvmfeature_sc = svmscaler.transform(knownsvmfeature)
+    unknownsvmfeature_sc = svmscaler.transform(unknownsvmfeature)  
     tsvmfeature_sc = svmscaler.transform(tsvmfeature)
 
     if Cmodel == "linear_svm":
         classifier = SVC(kernel="linear")
-        classifier.fit(svmfeature_sc, label)
+        classifier.fit(knownsvmfeature_sc, knownlabel.numpy())
         print(classifier.coef_)
-        print("train score: ", classifier.score(svmfeature_sc, label), "test score: ", classifier.score(tsvmfeature_sc, tlabel))
-        return classifier.score(tsvmfeature_sc, tlabel)
+        print("train score: ", classifier.score(knownsvmfeature_sc, knownlabel.numpy()), "test score: ", classifier.score(tsvmfeature_sc, tlabel))
     
     if Cmodel == "rbf_svm":
         classifier = SVC()
-        classifier.fit(svmfeature_sc, label)
-        print("train score: ", classifier.score(svmfeature_sc, label), "test score: ", classifier.score(tsvmfeature_sc, tlabel))
-        return classifier.score(tsvmfeature_sc, tlabel)
+        classifier.fit(knownsvmfeature_sc, knownlabel.numpy())
+        print("train score: ", classifier.score(knownsvmfeature_sc, knownlabel.numpy()), "test score: ", classifier.score(tsvmfeature_sc, tlabel.numpy()))
+        return classifier.score(tsvmfeature_sc, tlabel.numpy())
     
     if Cmodel == "decision_tree":
         classifier = DecisionTreeClassifier()
-        classifier.fit(svmfeature_sc, label)
-        print("train score: ", classifier.score(svmfeature_sc, label), "test score: ", classifier.score(tsvmfeature_sc, tlabel))
-        return classifier.score(tsvmfeature_sc, tlabel)
+        classifier.fit(knownsvmfeature_sc, knownlabel.numpy())
+        print("train score: ", classifier.score(knownsvmfeature_sc, knownlabel.numpy()), "test score: ", classifier.score(tsvmfeature_sc, tlabel.numpy()))
+        return classifier.score(tsvmfeature_sc, tlabel.numpy())
 
     if Cmodel == "random_forest":
         classifier = RandomForestClassifier()
-        classifier.fit(X=svmfeature_sc, y=label)
-        print("train score: ", classifier.score(svmfeature_sc, label), "test score: ", classifier.score(tsvmfeature_sc, tlabel))
-        return classifier.score(tsvmfeature_sc, tlabel)
+        classifier.fit(X=knownsvmfeature_sc, y=knownlabel.numpy())
+        print("train score: ", classifier.score(knownsvmfeature_sc, knownlabel.numpy()), "test score: ", classifier.score(tsvmfeature_sc, tlabel.numpy()))
+        return classifier.score(tsvmfeature_sc, tlabel.numpy())
 
+    rclassifier=copy.deepcopy(classifier)
+    knownlabel = np.reshape(knownlabel, (-1,1))
+    knownlabeleddata = np.hstack((knownsvmfeature_sc, knownlabel))
+    utils.save_in_train_all(knownlabeleddata, os.path.join(folderpath, Gmodel))
+    utils.save_in_random(knownlabeleddata, os.path.join(folderpath, Gmodel))
+
+    """traindata = np.loadtxt(os.path.join(folderpath, Gmodel) + "/knowndata.txt")
+    feature_sc=traindata[:,:-1]
+    label=traindata[:,-1]"""
+
+    expert_batch_num=10
+    iter_num=1
+    tscore=[]
+    rscore=[]
+    with open(os.path.join(os.path.join(folderpath, Gmodel), "activepic.pkl"),"wb") as f:
+        activepic=np.zeros((iter_num,expert_batch_num,28,28))
+        pickle.dump(activepic,f)
+    for i in range(iter_num):
+        samp = sample(os.path.join(folderpath, Gmodel), classifier, expert_batch_num)#add data in generated.txt
+        expert_label(os.path.join(folderpath, Gmodel), expert_batch_num, svmscaler, Gmo, i)#put data in knowndata.txt
+        random_add(os.path.join(folderpath, Gmodel), expert_batch_num,unknownsvmfeature_sc,unknownlabel)
+        knowndata=np.loadtxt(os.path.join(os.path.join(folderpath, Gmodel), "knowndata.txt"))
+        randomdata=np.loadtxt(os.path.join(os.path.join(folderpath, Gmodel), "randomdata.txt"))
+        tscore.append(train_classifier(classifier,knowndata,tsvmfeature_sc,tlabel))
+        rscore.append(train_classifier(rclassifier,randomdata,tsvmfeature_sc,tlabel))
+    print("active learning score",tscore)
+    print("random choose score",rscore)
+
+    #save
+    with open(os.path.join(os.path.join(folderpath, Gmodel),'linear_svm.pkl'), 'wb') as fw:
+        pickle.dump((classifier,svmscaler), fw)
+
+    #load
+    with open(os.path.join(os.path.join(folderpath, Gmodel),'linear_svm.pkl'), 'rb') as fr:
+        classifier_n,svmscaler_n = pickle.load(fr)
+        tsvmfeature_sc_n = svmscaler_n.transform(tsvmfeature)
+        print("testing set score",classifier_n.score(tsvmfeature_sc_n,tlabel))
+
+    with open(os.path.join(os.path.join(folderpath, Gmodel), "activepic.pkl"),"rb") as f:
+        activepic=pickle.load(f)
+        bigpic=np.zeros((activepic.shape[0]*28,activepic.shape[1]*28))
+        for i in range(activepic.shape[0]):
+            for j in range(activepic.shape[1]):
+                bigpic[i*28:i*28+28,j*28:j*28+28]=activepic[i,j]
+        activeprocess=torch.from_numpy(bigpic)
+        activeprocess.clamp(0,1)
+        save_image(activeprocess,os.path.join(os.path.join(folderpath, Gmodel),"active_process.png"))
+        """cv2.normalize(bigpic, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
+        cv2.imwrite(os.path.join(os.path.join(folderpath, Gmodel), "active_process.png"),bigpic)"""
+        """im = Image.fromarray(bigpic)
+        im.save(os.path.join(os.path.join(folderpath, Gmodel), "active_process.png"))"""
+        
+
+    return classifier
     """#preparing
     label = np.reshape(label, (-1,1))
     labeleddata = np.hstack((svmfeature_sc, label))
@@ -413,7 +569,7 @@ def active(folderpath, Gmodel, Cmodel):
     #test
     print("train score:",svm.score(feature_sc,label))
     return svm"""
-    return 0
+    #return classifier.score(tsvmfeature_sc, tlabel.numpy())
 
 """test_acc=np.zeros(10)
 for i in range(10):
@@ -424,5 +580,7 @@ std=np.sqrt(np.cov(test_acc,rowvar=False))
 halfci=1.96*std/np.sqrt(10)
 print("test_acc",np.mean(test_acc),"+-",halfci)"""
 
-t=active("data", "gmm", "random_forest")
-print(t)
+transform=transforms.ToTensor()
+traindata=datasets.MNIST(".",transform=transform,download=True,train=True)
+testdata=datasets.MNIST(".",transform=transform,download=True,train=False)
+classifier=active("data", "cnnae", "linear_svm",(traindata,testdata))

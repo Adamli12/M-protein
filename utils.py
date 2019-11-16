@@ -30,9 +30,24 @@ def recon_error(testdata,recon_batch):#controls if it shows reconstruction pictu
 def decision_distance(svm,x):
         w=svm.coef_
         b=svm.intercept_
-        dis=abs(sum(np.matmul(w,x))+b)
+        dis=abs(np.dot(w,x)+b)
         dis=dis/np.linalg.norm(w)
         return dis
+
+def projection_point(svm,x,distance=None):
+    if distance==None:
+        distance=decision_distance(svm,x)
+    w=svm.coef_
+    b=svm.intercept_
+    if (np.dot(w,x)+b)>=0:
+        normvec=w/np.linalg.norm(w)
+    else:
+        normvec=-w/np.linalg.norm(w)
+    proj=x-distance*normvec
+    dis=abs(np.dot(w,np.squeeze(proj))+b)
+    if dis>1e-6:
+        print("error!")
+    return proj
 
 def showpic(feature):
     weights=feature[:3]
@@ -44,7 +59,24 @@ def showpic(feature):
     cv2.destroyAllWindows()
     return 0
 
+def makepath(folderpath):
+    if not os.path.exists(folderpath):
+        os.mkdir(folderpath)
+    if not os.path.exists(os.path.join(folderpath, "train")):
+        os.mkdir(os.path.join(folderpath,"train"))
+    if not os.path.exists(os.path.join(folderpath, "all")):
+        os.mkdir(os.path.join(folderpath, "all"))
+    if not os.path.exists(os.path.join(os.path.join(folderpath, "all"),"generated")):
+        os.mkdir(os.path.join(os.path.join(folderpath, "all"),"generated"))
+    if not os.path.exists(os.path.join(os.path.join(folderpath, "all"),"balancing")):
+        os.mkdir(os.path.join(os.path.join(folderpath, "all"),"balancing"))
+
+def makepathlite(folderpath):
+    if not os.path.exists(folderpath):
+        os.mkdir(folderpath)
+
 def save_in_train_all(dat,mode,folderpath):
+    makepath(folderpath)
     if mode==1:
         np.savetxt(os.path.join(folderpath,"train/generated.txt"),dat)
         gen_str=pickle.dumps(dat)
@@ -59,6 +91,22 @@ def save_in_train_all(dat,mode,folderpath):
         f=open(os.path.join(folderpath,"all/balancing/")+str(num)+".txt","wb")
         f.write(gen_str)
         f.close()
+    return 0
+
+def save_in_train_all(dat,folderpath):
+    makepathlite(folderpath)
+    if os.path.exists(os.path.join(folderpath,"knowndata.txt")):
+        origindat=np.loadtxt(os.path.join(folderpath,"knowndata.txt"))
+        dat=np.vstack((dat,origindat))
+    np.savetxt(os.path.join(folderpath,"knowndata.txt"),dat)
+    return 0
+
+def save_in_random(dat,folderpath):
+    makepathlite(folderpath)
+    if os.path.exists(os.path.join(folderpath,"randomdata.txt")):
+        origindat=np.loadtxt(os.path.join(folderpath,"randomdata.txt"))
+        dat=np.vstack((dat,origindat))
+    np.savetxt(os.path.join(folderpath,"randomdata.txt"),dat)
     return 0
 
 def mean(a,b):
@@ -501,14 +549,14 @@ folder_to_data("generate_nopics","no",5)
 print(read_label("nolabels.csv",[0,0,0,0,0]))
 """
 if __name__ == "__main__":
-    #classify_folder("pics/trainpics","train",gt=gt,testflag=1,cut_n=6,numsort=0)
+    """#classify_folder("pics/trainpics","train",gt=gt,testflag=1,cut_n=6,numsort=0)
     
     generate_pics("generate_gkpics","generate_nopics",20)
     #folder_to_data("generate_gkpics","gk",5,)
     #folder_to_data("generate_nopics","no",5)
     #print(read_label("nolabels.csv",[0,0,0,0,0]))
     folder_to_vae_data_gkno("generate_gkpics","data/gk",5)
-    folder_to_vae_data_gkno("generate_nopics","data/no",5)
+    folder_to_vae_data_gkno("generate_nopics","data/no",5)"""
     
 
 """

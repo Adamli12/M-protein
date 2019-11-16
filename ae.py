@@ -77,7 +77,6 @@ class AE(nn.Module):
         z = self.encode(x.view(-1, 300))
         return self.decode(z), z
 
-# Reconstruction + KL divergence losses summed over all elements and batch
 
 class AEmodel():
     def __init__(self, dat, args):
