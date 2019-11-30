@@ -7,6 +7,7 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{multirow}
+\usepackage{textcomp}
 
 % Include other packages here, before hyperref.
 
@@ -100,14 +101,35 @@ Our framework consists of two steps: the first one is to train of a bidirectiona
 \subsection{Choice of Generative Models}
 Generative models in most cases are mapping functions from low-dimension prior of latent variables to high-dimension data space whose parameters maximises the likelihood of existing data\cite{goodfellow2016nips}. After training with adequate amount of data, we will have enough knowledge of all the decisive latent variables and we know exactly how these variables influence the corresponding point in data space. However, just generative is not enough. In testing state we need to encode all the test data to latent space. Hence, only bidirectional generative model are considered. Here, not only did we tried out classic bidirectional generative models including BiGAN and VAE, but we also hypothesized a GMM generative model using prior knowledge of the formation of IFE image. We can denote the decoder(generator) and encoder of the bidirectional model respectively as $D(z_i)$ and $E(x_i)$ so that we have $g(x_i)=f(E(x_i))$. Of course we expect that $D(E(x_i))$ to be as close as it can to $x_i$, or classifing $z_i$ will not provide any useful information.
 
+\begin{figure}[t]
+    \begin{center}
+       \includegraphics[width=0.8\linewidth]{motivation.jpg}
+    \end{center}
+       \caption{Motivation of our framework}
+    \end{figure}
+
 \subsubsection{GMM}
-Choosing Gaussian mixture model to represent the formation of IFE image is not only natural, but also reasonable. For monoclonal band, the target Protein are all the same. Therefore if the electrophoresis procedure introduce no systematic error, all the monoclonal Protein should be in the same spot since the position that any type of Protein appears on the IFE image depends solely on its molecular properties such as weight and the electric charge it carries. In reality, noise is unavoidable, and we can suppose that the accumulation of small noises is under normal distribution. On the other hand, the polyclonal band can be perceived as a normal distribution whose mean (and variance?) also obeys normal distribution becuase it contains many different kinds of Protein which have different weight and electric proterty. Every kind of Protein forms a normal distribution due to the noise of electrophoresis. Thus, it is still a normal distribution(can be proved, need to find prove or prove myself). From above, we can derive that the one dimension signal is the empirical distrubution of the summation of several gaussian components. Empirically, in real data the number of gaussian components will not exceed 3.
+Gaussian mixture model is an iteritive aIgorithm using estimation maximization. It assumes that the data is the weighted conbination of several Gaussian distribution. The number of the components(Gaussian distribution) are usually set manually. Specifically, we can view the density plot of the gel electrophoresis as a sample, where the sample number of certain position is in direct proportion to the density of that position. Thus, ideally the density plot will be divide in to several seperate components of Gaussian distribution which approximates the concentration of charged protains(peaks). Choosing Gaussian mixture model to represent the formation of IFE image is not only natural, but also reasonable. For monoclonal band, the target Protein are all the same. Therefore if the electrophoresis procedure introduce no systematic error, all the monoclonal Protein should be in the same spot since the position that any type of Protein appears on the IFE image depends solely on its molecular properties such as weight and the electric charge it carries. In reality, noise is unavoidable, and we can suppose that the accumulation of small noises is under normal distribution. On the other hand, the polyclonal band can be perceived as a normal distribution whose mean (and variance) also obeys normal distribution becuase it contains many different kinds of Protein which have different weight and electric proterty. Every kind of Protein forms a normal distribution due to the noise of electrophoresis. Thus, it is still a normal distribution.%(can be proved, need to find prove or prove myself)
+From above, we can derive that the one dimension signal is the empirical distrubution of the summation of several gaussian components. Empirically, in real data the number of gaussian components will not exceed 3.
 
 In practice though, we use a variation of GMM which uses variational inference algorithms that do not need to suppose the number of gaussian components. The API called Bayesian Gaussian Mixture in sklearn\cite{scikit-learn}, and it is an infinite mixture model with the Dirichlet Process. In practice Dirichlet Process inference algorithm is approximated and uses a truncated distribution with a fixed maximum number of components (called the Stick-breaking representation). The number of components actually used almost always depends on the data\cite{article}\cite{ATTIAS2000A}. Thus we only need to fix the max number of Gaussian components, for example 3, and if only 2 of the components is working, than we will still get 3 components and one of them will have 0 weight.
 
+\subsection{Hand Crafted Rules for GMM Vectors}
+After we find the proper decomposition of the density plot(examples in section 3.2), we can use our prior knowledge to match peaks in different columns and determine if a peak indicates monoclonal component.
+\par Firstly we try to preprocess the peak information provided by the GMM(Gaussian Mixture Model). GMM divide the density plot to several distinct Gaussian components, therefore it is possible that it may wrongly treat one polyclonal peak as the sum of two sharp(i.e. monoclonal) peaks. We can name the situation as "far overlap". For instance the 1 and 4 column in the figure 1.
+\par However, a sharp peak in the middle of a polyclonal background is also a tricky problem. If the mean of the background peak and the sharp peak is almost the same, the GMM will give us unsatisfying result where the extracted sharp peak is not as sharp as we think. For instance column 5 in the figure 1. We can name this case "near overlap".
+\par To sum up, the classification rules should be able to identify near and far overlap and of course stay robust when countering these cases. Identifying is easy because all we need to do is considering the means of every pair of components in one column for each column. Hence, the rule has two steps: preprocessing and classifying. In preprocessing step, we supress the far overlap components so that each one of them will be considered normal. Of course when the weight difference or the variance difference is too large this mechanism will not be trigered. At the same time, the weight of each peak of the near overlap case will be replaced by the sum of the weights. In the classifying step we can consider every components with the all the components in the rest of the columns, and the rules are similar with the peak detection method in the column matching part, but here we use $t=\frac{Variance}{n\_samples*weight}$ as the Identifying value. If t is lower than a manually set threshold than the classifier will lable it as abnormal.
+
+
+\begin{figure}[t]
+    \begin{center}
+       \includegraphics[width=0.8\linewidth]{active.jpg}
+    \end{center}
+       \caption{The iterative process of active leraning. We generate data samples to get more imformation}
+    \end{figure}
 
 \subsection{Active Learning Process}
-After we completes the first stage of training process, we now have a low dimension embedding of the real data(300 dimension signal). The second stage is to actively train a classifier in this latent variable space. Each iteration of active learning contains the training of classifier, sampling data to be labeled, expert labeling and updating the training set. The main difference between generative active learning and traditional pool based active learning is the way of sampling. Here we can sample any point near the decision hyperplane because we can transform any point in latent space to a point in data space. According to the classifier, different sampling strategy can be used.
+After we completes the first stage of training process, we now have a low dimension embedding of the real data(300 dimension signal). The second stage is to actively train a classifier in this latent variable space. Each iteration of active learning contains the training of classifier, sampling data to be labeled, expert labeling and updating the training set. The main difference between generative active learning and traditional pool based active learning is the way of sampling. Here we can sample any point near the decision hyperplane because we can transform any point in latent space to a point in data space. According to the classifier, different sampling strategy can be used. For example, we conducted experiments on MNIST dataset and chose linear SVM as the classifier, we first choose 10 unknown data points from the pool that are nearest to the decision hyperplane of the linear SVM classifier, then we derive their projection on the decision hyperplane. This simple sampling method assures that the generated data points will be informative since they are in each iteration one of the most uncertain points in the latent space. As for the hand crafted rules' case, we aim to find the most informative data points to update the parameters in the rules(i.e. the $t$ from the above subsection and etc.) We can utilize reinforcement learning to update the parameters using labeled data, but combining reinforcement learning and active learning process is left for future research.
 
 \section{Experiments}
 To proof the concept of this framework, we performed experiments using this framework on not only the dataset of IFE images, but also the MNIST dataset.
@@ -147,20 +169,44 @@ Different approaches to find the mapping between data space and latent space sho
   \end{table}%
   
 
-Firstly, reconstruction error is the most important property of a representation. In ideal case, the mapping should be injective. If not, the classifier in latent space will not be able to provide valid judgement in data space. Partly because of the lack of large unlabeled real dataset, GMM achieved overwhelming advantage compared to other representations.
+Firstly, reconstruction error is the most important property of a representation. In ideal case, the mapping should be injective. If not, the classifier in latent space will not be able to provide valid judgement in data space. Partly because of the lack of large unlabeled real dataset, GMM achieved overwhelming advantage compared to other representations. What's more, every feature in the GMM vector has its essential meaning, and we clearly know how the latent space stands for. However, when it comes to auto encoder and variational auto encoder we do not even know whether the corresponding point will move if we change one of the feature in the latent vector.
 
-Secondly, the test accuracy of different combinations not only reveals the capability of the representation and classifier, it also evaluates their matching degree. For example, GMM works well with specifically designed rule-based method, but due to its highly non-linear space, linear svm will achieve bad results.
+Secondly, the test accuracy of different combinations not only reveals the capability of the representation and classifier, it also evaluates their matching degree. For example, GMM works well with specifically designed rule-based method, but due to its highly non-linear space, linear svm will achieve bad results. For other classifiers like decision trees and rbf SVM, they often tend to overfit because of the small labeled dataset not to mention the end to end model that solely based on neural network. They all achieves 100$\%$ in the training set but low accuracy on the test set. The derivative filter applys simple edge detection methods for example the 1$^{st}$ and 2$^{nd}$ derivative, and here we use it as a baseline.
+
+In conclusion, GMM based generative model and rule based classifier is the best match for this IFE dataset. However, we cannot solely depend on manually drafted rules. In other words we still need labeled data to improve its generalizability.
 
 \subsection{Combining Active Learning with SVM}
-We will first present the result regarding the MNIST dataset(binary case of 3 and 8) which we use to prove our concept. Although Huijser and Gemert have implemented a model with SVM classifier in the latent space\cite{huijser2017active}, we cannot directly follow their results, because when the decision hyperplane is not linear like the case of GMM space, the novel boundary method will not work. Thus in this experiment, unfortunately, we still have to generate a few imformative data points instend of a clever boundary line, even if we can use linear SVM in the auto encoder latent space. We simply chose auto encoder as the generative model that will bridge the gap between the data space and latent space. This will be trained on all the data in the training set. Afterwards, we randomly pick $1\%$ of the training set to be the initial labeled data, and perform 10 iterations of active learning. In each iteration 10 generated data points will be labeled by an oracle, and the SVM classifier will be updated.
+We will first present the result regarding the MNIST dataset(binary case of 3 and 8) which we use to prove our concept. Although Huijser and Gemert have implemented a model with SVM classifier in the latent space\cite{huijser2017active}, we cannot directly follow their results, because when the decision hyperplane is not linear like the case of GMM space, the novel boundary method will not work. Thus in this experiment, unfortunately, we still have to generate a few imformative data points instend of a clever boundary line, even if we can use linear SVM in the auto encoder latent space. We simply chose auto encoder as the generative model that will bridge the gap between the data space and latent space. This will be trained on all the data in the training set. Afterwards, we randomly pick 1\textperthousand \ of the training set to be the initial labeled data, and perform 10 iterations of active learning. In each iteration 10 generated data points will be labeled by an oracle, and the SVM classifier will be updated. We will compare this setting with the same amount of randomly picked data using the same auto encoder. In this random setting, the auto encoder simply works as a method of dimensionality reduction, as we do not need to decode the generated data points in latent space back to data space. Figure 5 is the images of generated data points after decoding into data space. We can see that almost every image transformed to the real data space requires close scrutiny to distinguish 3 from 8. They are on the decision hyperplane of the classifier in every iteration, thus after transformation into the real data space, they ought to be on the edge as well. When compared to the random chosen data, they tend to yeild more information. Figure 6 and table 3 compares the learning efficiency between random sampling in the data pool and active generation. The reason why active generation achieves worse result is probably because the human introduced error of hand written digits. As can be seen from figure 5, some of the generated images are hard to tell whether they belong to 3 or 8. For another, there is only 12 initial data, and all other data in active learning setting are near to the real decision hyperplane. We may consider introducing some of the balancing data(augmenting the known data which is far from the decision hyperplane) to alleviate this problem.
+
+\begin{figure}[t]
+    \begin{center}
+       \includegraphics[width=0.8\linewidth]{active_process.png}
+    \end{center}
+       \caption{Generated pics in 10 iterations of active learning. Each row is an iteration.}
+    \end{figure}
+
+% Table generated by Excel2LaTeX from sheet 'Sheet1'
+\begin{table*}
+    \centering
+    \caption{Compare between active learning and random pick}
+      \begin{tabular}{lrrrrrrrrrrr}
+        \hline
+      data amount & 12    & 22    & 32    & 42    & 52    & 62    & 72    & 82    & 92    & 102   & 112 \\
+      \hline
+      active & 0.8594  & 0.8624  & 0.8624  & 0.8619  & 0.8619  & 0.8614  & 0.8614  & 0.8614  & 0.8619  & 0.8614  & 0.8609  \\
+      random & 0.8594  & 0.8861  & 0.8866  & 0.8861  & 0.8876  & 0.8871  & 0.8876  & 0.8881  & 0.8881  & 0.8881  & 0.8881  \\
+      \hline
+      \end{tabular}%
+    \label{tab:addlabel}%
+  \end{table*}%
+  
+  
 
 \subsection{Combining Active Learning with Rule Based Classifier}
 Because of the active learning process, the embedding methods should satisfy the properties below. Data points that are close to each other will also have small distance in the latent space. Else the generated data points in latent space probably will not be imformative at all. In addition, GMM method is based on the formation process of IFE images, which endow it with great explainability. Thus it is natural to find out that using GMM as generative model, and the rule based classifier specifically designed for the latent vector produced by GMM model as the classifier model is the best combination for IFE image dataset.
 
-\section{Discussion}
-
 \section{Conclusion}
-To sum up
+To sum up, we have proposed an active learning framework that generates new data in order to achieve more information than traditional pool based methods. We applied this framework to a medical image dataset regarding with M-protain diagnostics and IFE. To achieve maximum use of our prior knowledge of the formation of an IFE image, we proposed a novel generative model specifically for this data set based on GMM, and constructed a rule based classifier which works in the latent space of GMM. We conducted extensive experiments to explore the best match of generative model and classifiers, including auto encoder, linear SVM on MNIST dataset and GMM, rule based classifier on IFE image dataset.
 
 
 {\small

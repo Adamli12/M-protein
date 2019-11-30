@@ -10,7 +10,7 @@ import numpy as np
 parser = argparse.ArgumentParser(description='AE M-protain')
 parser.add_argument('--batch-size', type=int, default=16, metavar='N',
                     help='input batch size for training (default: 4)')
-parser.add_argument('--epochs', type=int, default=10, metavar='N',
+parser.add_argument('--epochs', type=int, default=50, metavar='N',
                     help='number of epochs to train (default: 300)')
 parser.add_argument('--no-cuda', action='store_true', default=False,
                     help='enables CUDA training')

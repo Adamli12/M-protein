@@ -192,7 +192,7 @@ def active(folderpath, Gmodel, Cmodel, dataset=None):
         kepti=[i for i in range(len(label)) if (label[i]==3 or label[i]==8)]
         feature=feature[kepti]
         label=label[kepti]
-        knownfeature, unknownfeature, knownlabel, unknownlabel = map(torch.from_numpy,train_test_split(feature.numpy(),label.numpy(),test_size=0.99))
+        knownfeature, unknownfeature, knownlabel, unknownlabel = map(torch.from_numpy,train_test_split(feature.numpy(),label.numpy(),test_size=0.999))
         tfeature=dataset[1].data.float()/255
         tlabel=dataset[1].targets
         tkepti=[i for i in range(len(tlabel)) if (tlabel[i]==3 or tlabel[i]==8)]
@@ -478,9 +478,9 @@ def active(folderpath, Gmodel, Cmodel, dataset=None):
     label=traindata[:,-1]"""
 
     expert_batch_num=10
-    iter_num=1
-    tscore=[]
-    rscore=[]
+    iter_num=10
+    tscore=[classifier.score(tsvmfeature_sc, tlabel)]
+    rscore=[rclassifier.score(tsvmfeature_sc, tlabel)]
     with open(os.path.join(os.path.join(folderpath, Gmodel), "activepic.pkl"),"wb") as f:
         activepic=np.zeros((iter_num,expert_batch_num,28,28))
         pickle.dump(activepic,f)
@@ -494,6 +494,12 @@ def active(folderpath, Gmodel, Cmodel, dataset=None):
         rscore.append(train_classifier(rclassifier,randomdata,tsvmfeature_sc,tlabel))
     print("active learning score",tscore)
     print("random choose score",rscore)
+    x=np.arange(iter_num+1)*expert_batch_num+knownfeature.size(0)
+    plt.plot(x,tscore,label="active learning accuracy")
+    plt.plot(x,rscore,label="random pic accuracy")
+    plt.xlabel('data amount')
+    plt.ylabel('accuracy')
+    plt.savefig(os.path.join(os.path.join(folderpath, Gmodel),"compare_with_random.png"))
 
     #save
     with open(os.path.join(os.path.join(folderpath, Gmodel),'linear_svm.pkl'), 'wb') as fw:
